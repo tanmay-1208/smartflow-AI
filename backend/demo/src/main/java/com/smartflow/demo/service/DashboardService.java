@@ -27,19 +27,36 @@ public class DashboardService {
             .mapToDouble(Transaction::getAmount)
             .sum();
 
+        // Expenses are already negative, so we add them to get net cash flow
+        double netCashFlow = totalIncome + totalExpense;
 
-           .sum();
-uble(Transaction::getAmount)
-se(t.getType()))
-t cash flow
-        double netCashFlow = totalIncome + tot        double netCashFlow = tota(
-                                                                                                         ne                                                            .si                                             rin               Cashf                                         l = transact                                       ring, dou                                                       eTi                                            Pa                                                                                                                                                                                                                            0}           me, expense]
+        return Map.of(
+            "totalIncome", totalIncome,
+            "totalExpense", Math.abs(totalExpense),
+            "netCashFlow", netCashFlow,
+            "transactionCount", all.size()
+        );
+    }
 
-            if ("INCOME".equalsIgnoreCa            if ("INCOME".equalsIgnoreCa            if ("INCOME".t.            if ("INCOME".equalsIgnoreCa                      if ("Ionth)[1] += t.getAmount(); // amounts are negative
+    public List<Map<String, Object>> getCashflowChart() {
+        List<Transaction> all = transactionRepository.findAll();
+        Map<String, double[]> monthlyData = new LinkedHashMap<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM yyyy");
+
+        for (Transaction t : all) {
+            if (t.getDate() == null) continue;
+            String month = t.getDate().format(formatter);
+            monthlyData.putIfAbsent(month, new double[]{0, 0}); // [income, expense]
+
+            if ("INCOME".equalsIgnoreCase(t.getType())) {
+                monthlyData.get(month)[0] += t.getAmount();
+            } else {
+                monthlyData.get(month)[1] += t.getAmount(); // amounts are negative
             }
         }
 
-                                                                                    <String, double[]> entry : monthlyData.entrySet()) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Map.Entry<String, double[]> entry : monthlyData.entrySet()) {
             result.add(Map.of(
                 "month", entry.getKey(),
                 "income", entry.getValue()[0],
