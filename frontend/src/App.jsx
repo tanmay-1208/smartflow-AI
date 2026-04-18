@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import AiAdvisor from "./pages/AiAdvisor";
+import Forecast from "./pages/Forecast";
 
 function ProtectedRoute({ children }) {
   const { token } = useAuth();
@@ -19,6 +20,7 @@ export default function App() {
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
           <Route path="/ai-advisor" element={<ProtectedRoute><AiAdvisor /></ProtectedRoute>} />
+          <Route path="/forecast" element={<ProtectedRoute><Forecast /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </BrowserRouter>
