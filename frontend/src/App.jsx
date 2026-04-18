@@ -6,6 +6,7 @@ import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import AiAdvisor from "./pages/AiAdvisor";
 import Forecast from "./pages/Forecast";
+import Home from "./pages/Home";
 
 function ProtectedRoute({ children }) {
   const { token } = useAuth();
@@ -17,6 +18,7 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />

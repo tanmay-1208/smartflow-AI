@@ -1,7 +1,11 @@
-import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 import {
+  Bot, useState } from "react";
+import {
+  Bot, Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  Bot, useAuth } from "../context/AuthContext";
+import {
+  Bot,
   LayoutDashboard,
   ArrowLeftRight,
   TrendingUp,
@@ -15,6 +19,7 @@ const NAV_ITEMS = [
   { label: "Dashboard",    path: "/dashboard",    icon: LayoutDashboard },
   { label: "Transactions", path: "/transactions", icon: ArrowLeftRight  },
   { label: "Forecast",     path: "/forecast",     icon: TrendingUp      },
+  { label: "AI Advisor",   path: "/ai-advisor",   icon: Bot             },
 ];
 
 export default function Layout({ children }) {
