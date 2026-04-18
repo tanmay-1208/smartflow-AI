@@ -22,35 +22,19 @@
         </developers>
         <scm>
                 <connection/>
-                <developerConnection/>
-                <tag/>
-                <url/>
-        </s        </s        </s        </s              </s        </s        </s        </s              </s        </s        </s        </s       dency>
+                <developerC                <developerC                <developerC             /s                <developerC                            <developerC                <developerC                <developerC             /s       ncy>
                         <groupId>org.springframework.boot</groupId>
-                        <artifactId>sp        t-starter-data-jpa</artifactId>
-                </dependency>
-                <dependency>
-                        <groupId>org.springframework.boot</groupId>
-                        <artifactId>spring-boot-starter-web</artifactId>
-                </dependency>
-                <dependency>
-                        <groupId>org.springframework.boot</groupId>
-                        <artifactId>spring-boot-devtools</artifactId>
-                        <scope>runtime</s                              <opt                                      </depende                                             <                     org.p            roupId>
-                              actId>postgresql</artifactId>
+                        <artifactId>spring-boot-starter-data-jpa</artifactId>
+                </de                </de                </de                </                  </de                </de                </de                        </de                </d/a                </de                </de                </dependency>
+                                                          /g                                    if                                                                               /s                                pt                                             de                     <dependency>
+                        <groupId>org.p            roupId>
+                        <artifactId>postgresql</artifactId>
                         <scope>runtime</scope>
                 </dependency>
                 <dependency>
                         <groupId>org.projectlombok</groupId>
-                        <artifactId>lombok</artifactId>
-                        <optional>true</optional>
-                </dependency>
-                <dependency>
-                        <groupId>org.springframework.boot</groupId>
-                        <artifactId>spring-boot-starter-test</artifactId>
-                        <scope>test</scope>
-                </dependency>
-        </dependencies>
+                        <artifactId>lomb                        <artifactId>lomb                      al>
+                                                                                                                                                                                                                                                                                                          
 
         <build>
                 <plugins>
