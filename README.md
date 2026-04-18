@@ -1,3 +1,13 @@
+---
+title: Smartflow Backend
+emoji: 🚀
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # SmartFlow AI 💰
 > AI-powered cash flow management for Indian small businesses
 
