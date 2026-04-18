@@ -29,16 +29,26 @@ export default function Transactions() {
       // Sort by date DESC
       uniqueData.sort((a, b) => new Date(b.date) - new Date(a.date));
       setData(uniqueData);
-    } catch (err)    } catch (err)    } catch (err)
+    } catch (err) {
+      console.error(err);
+    }
   };
 
+  useEffect(() => {
+    fetchTransactions();
 
- };
- catch (err)    } catch (ransaction catch (err)    } catch (ransaction catch hannel = supabase
+    const channel = supabase
       .channel('transactions')
       .on(
         'postgres_changes',
-        {        {        {        {        {    ra        s'        {        {        {        {        {    ra .subscribe();
+        { event: '*', schema: 'public', table: 'transactions' },
+        (payload) => {
+          console.log('Realtime change received!', payload);
+          setIsLive(true);
+          fetchTransactions();
+        }
+      )
+      .subscribe();
 
     return () => {
       setIsLive(false);
@@ -47,13 +57,29 @@ export default function Transactions() {
   }, []);
 
   const filteredData = data.filter((t) => {
-    const matchesFilter = filter === "ALL" || t.type === filter    const matchesFilter = filter === "ALcription?.toL werCase()    const matchesFilter = filter === "ALL" || t.type to    const matchesFilter = filter ==Case());
-    const matchesFilter  &&    const matchesFilter  &&    co
+    const matchesFilter = filter === "ALL" || t.type === filter;
+    const matchesSearch = (t.description || "").toLowerCase().includes(search.toLowerCase()) || 
+                          (t.category || "").toLowerCase().includes(search.toLowerCase());
+    return matchesFilter && matchesSearch;
+  });
+
+  return (
     <div className="p-6 text-white min-h-screen">
       <div className="max-w-6xl mx-auto space-y-6">
         
-                            di                            di                            di        be                         s-                            di                    ont-bold flex                            di                            di                            di   lassName="flex items-center gap-1 text-xs fo                          g-                            di                            di                            di        be                         ame="animate-ping abso                   full                             di       ity-75"><   an>
-                  <span className="relative inli                  <span className="relative inli                  <span className="relative inli                  <span className="relative inli                  <span className="relative inli                  <span classNa-c                  <span className="relative inli           de                  <span className="relative inl <div className="flex gap-2">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-3xl font-extrabold tracking-tight">Transactions</h1>
+            <div className="flex items-center gap-2 text-sm text-gray-400">
+              <div className="relative flex h-2.5 w-2.5">
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isLive ? 'bg-green-400' : 'bg-gray-500'}`}></span>
+                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isLive ? 'bg-green-500' : 'bg-gray-500'}`}></span>
+              </div>
+              {isLive ? 'Live Sync Active' : 'Connecting to Realtime...'}
+            </div>
+          </div>
+          
+          <div className="flex gap-2">
             <button 
               onClick={() => setFilter("ALL")}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === "ALL" ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"}`}
@@ -65,11 +91,31 @@ export default function Transactions() {
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === "INCOME" ? "bg-green-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"}`}
             >
               Income
-            </butto            </butto            </butto            </butto            </butto            </butto            </butto            </butto            </butto            </butto            </butto            </butto            </butto            </butto            </butto            </butto            </butto            </butto            </butto            </butto            </butto            </butto          y             </buttogo            </butto            </butto        o            </butto            </butto            </butto            </butto            </butto            </butto            </butto            </butto            </butto        e             -blue-500 w-full sm:w-64 transition-colors"
+            </button>
+            <button 
+              onClick={() => setFilter("EXPENSE")}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === "EXPENSE" ? "bg-red-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"}`}
+            >
+              Expense
+            </button>
+          </div>
+        </div>
+
+        <div className="flex bg-gray-900/50 p-1 rounded-xl border border-gray-800">
+          <input 
+            type="text" 
+            placeholder="Search transactions..." 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="bg-transparent border-none text-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full rounded-lg transition-colors"
           />
-                                                      ssName="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden shadow-sm">
+        </div>
+
+        <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collaps                          <table          <tr className="bg-gray-950 border-b border-gray-800 text-gray-400 text-xs uppercase tracking-wider">
+            <table className="w-full text-left border-collapse focus:outline-none">
+              <thead>
+                <tr className="bg-gray-950 border-b border-gray-800 text-gray-400 text-xs uppercase tracking-wider">
                   <th className="p-4 font-medium">Date</th>
                   <th className="p-4 font-medium">Description</th>
                   <th className="p-4 font-medium">Category</th>
@@ -82,7 +128,11 @@ export default function Transactions() {
                   <tr>
                     <td colSpan="5" className="p-8 text-center text-gray-500 text-sm">
                       No transactions found.
-                                                                                                                                                m = Number(t.amount);
+                    </td>
+                  </tr>
+                ) : (
+                  filteredData.map((t) => {
+                    const num = Number(t.amount);
                     const sign = num >= 0 ? "+" : "-";
                     return (
                       <tr key={t.id} className="hover:bg-gray-800/60 transition-colors">
