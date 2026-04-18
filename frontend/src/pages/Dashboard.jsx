@@ -18,7 +18,7 @@ const StatCard = ({ label, value, icon: Icon, color }) => (
         {value === undefined ? "0" : `₹${Math.abs(value).toLocaleString("en-IN")}`}
       </p>
     </div>
-    <div className={`p-3 rounded-xl bg-gray-800`}>
+    <div className="p-3 rounded-xl bg-gray-800">
       <Icon size={20} className={color} />
     </div>
   </div>
@@ -46,8 +46,6 @@ export default function Dashboard() {
   const [chart, setChart] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Added state for Fix 1: year selector
   const [selectedYear, setSelectedYear] = useState("");
 
   useEffect(() => {
@@ -60,14 +58,17 @@ export default function Dashboard() {
         setSummary(summaryData);
         setChart(chartData);
 
-        // Derive available years from "MMM yyyy" format (e.g. "Apr 2026")
         if (chartData && chartData.length > 0) {
-          const years = Array.from(new Set(chartData.map(d => d.month.split(" ")[1]))).sort((a,b) => b - a);
-          if (years.length > 0) {
-            setSelectedYear(years[0]); // Select most recent year
-          }
+          // Count months per year, default to the year with the MOST data points
+          const yearCounts = {};
+          chartData.forEach((d) => {
+            const year = d.month.split(" ")[1];
+            yearCounts[year] = (yearCounts[year] || 0) + 1;
+          });
+          const dominantYear = Object.entries(yearCounts).sort((a, b) => b[1] - a[1])[0][0];
+          setSelectedYear(dominantYear);
         }
-        
+
         setLoading(false);
       })
       .catch(() => {
@@ -76,16 +77,22 @@ export default function Dashboard() {
       });
   }, [token]);
 
-  // Derive filtered chart data based on selected year
   const filteredChart = useMemo(() => {
     if (!selectedYear || chart.length === 0) return chart;
-    return chart.filter(d => d.month.endsWith(selectedYear));
+    return chart.filter((d) => d.month.endsWith(selectedYear));
   }, [chart, selectedYear]);
 
-  // Available years for dropdown
+  // Sort available years: most data first, then alphabetically
   const availableYears = useMemo(() => {
     if (!chart || chart.length === 0) return [];
-    return Array.from(new Set(chart.map(d => d.month.split(" ")[1]))).sort((a,b) => b - a);
+    const yearCounts = {};
+    chart.forEach((d) => {
+      const year = d.month.split(" ")[1];
+      yearCounts[year] = (yearCounts[year] || 0) + 1;
+    });
+    return Object.entries(yearCounts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([year]) => year);
   }, [chart]);
 
   if (loading) {
@@ -106,13 +113,11 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-5xl mx-auto">
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-white">Dashboard</h1>
         <p className="text-gray-500 text-sm mt-1">Your business cash flow at a glance</p>
       </div>
 
-      {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard
           label="Total Income"
@@ -132,7 +137,6 @@ export default function Dashboard() {
           icon={DollarSign}
           color={summary.netCashFlow >= 0 ? "text-blue-400" : "text-red-400"}
         />
-        {/* Fix 2: transactions count mapped correctly */}
         <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5 flex items-center justify-between">
           <div>
             <p className="text-xs text-gray-500 uppercase tracking-widest mb-1">Transactions</p>
@@ -144,29 +148,27 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Chart */}
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-widest">
             Monthly Cash Flow
           </h2>
-          {/* Fix 1: Year Selector */}
-          {availableYears.length > 0 && (
+          {availableYears.length > 1 && (
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
               className="bg-gray-800 border border-gray-700 text-gray-300 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
-              {availableYears.map(year => (
+              {availableYears.map((year) => (
                 <option key={year} value={year}>{year}</option>
               ))}
             </select>
           )}
         </div>
-        
+
         {filteredChart.length === 0 ? (
           <div className="flex items-center justify-center h-64 text-gray-600 text-sm">
-            No chart data available for {selectedYear}
+            No chart data for {selectedYear}
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={300}>
