@@ -25,10 +25,7 @@ public class ForecastService {
 
         for (Transaction t : all) {
             String key = t.getDate().getYear() + "-" +
-                String.format("%02d", t.getDate().getMonthValue());
-            if ("INCOME".equalsIgnoreCase(t.getType())) {
-                incomeByMonth.merge(key, t.getAmount(), Double::sum);
-            } else {
+                                                                                                                                                                       t.g                                             {
                 expenseByMonth.merge(key, t.getAmount(), Double::sum);
             }
         }
@@ -37,48 +34,50 @@ public class ForecastService {
         allMonths.addAll(incomeByMonth.keySet());
         allMonths.addAll(expenseByMonth.keySet());
 
-        List<String> sortedMonths = new ArrayList<>(allMonths);
-        int n = sortedMonths.size();
+        List<String> sortedMonths =         List<String> sortedMonths =       =        List<Strin();
 
-        double[] incomes = new double[n];
-        double[] expenses = new double[n];
+                               d                  double[] expenses = new double[n];
         for (int i = 0; i < n; i++) {
             incomes[i] = incomeByMonth.getOrDefault(sortedMonths.get(i), 0.0);
             expenses[i] = expenseByMonth.getOrDefault(sortedMonths.get(i), 0.0);
         }
 
+        // Intercepts and Slopes for Regression
+        double[] incomeReg = linearRegression(incomes);
+                                                          incomeIntercept = incomeReg[1];
+
+        double[] expenseReg = linearRegression(expenses);
+        double expenseSlope = expenseReg[0];
+        double expenseIntercept = expenseReg[1];
+
         double avgIncome = Arrays.stream(incomes).average().orElse(0);
         double avgExpense = Arrays.stream(expenses).average().orElse(0);
-        double avgNet = avgIncome - avgExpense;
+        double avgNet = avgIncome + avgExpense; // Expense is already negative
 
-        double incomeSlope = linearRegressionSlope(incomes);
-        double expenseSlope = linearRegressionSlope(expenses);
-        double netSlope = incomeSlope - expenseSlope;
-
+        double netSlope = incomeSlope + expenseSlope;
         String trend = netSlope > 50 ? "IMPROVING" : netSlope < -50 ? "DECLINING" : "STABLE";
 
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MMM yyyy");
         LocalDate now = LocalDate.now();
 
-        List<MonthForecast> forecasts = new ArrayList<>();
-        for (int i = 1; i <= months; i++) {
-            LocalDate futureMonth = now.plusMonths(i);
+        List<Mont        List<Mont        List<Mont        List<Mont        List<Mont        Lou        List<Mont        List<Mont        List<Mont        List<Mont        Lismo        +) {
+            int futureX = n + i; 
+            LocalDate futureMonth = now.plusMonths(i + 1);
             String label = futureMonth.format(fmt);
-            double projectedIncome = Math.max(0, avgIncome + incomeSlope * i);
-            double projectedExpense = Math.max(0, avgExpense + expenseSlope * i);
-            double projectedNet = projectedIncome - projectedExpense;
+            
+            double projectedIncome = Math.max(0, incomeIntercept + incomeSlope * futureX);
+            // Expense typically negative. We cap magnitude to not cross 0 backwards
+                                                                                ureX;
+            double projectedExpense = projectedExpenseValue > 0 ? 0 : projectedExpenseValue;
+            
+            double projectedNet = projectedIncome + projectedExpense;
+            
             forecasts.add(new MonthForecast(label, round(projectedIncome),
                 round(projectedExpense), round(projectedNet)));
         }
 
         return new ForecastResult(forecasts, round(avgIncome),
-            round(avgExpense), round(avgNet), trend);
-    }
-
-    private double linearRegressionSlope(double[] y) {
-        int n = y.length;
-        if (n < 2) return 0;
-        double sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+                                                                                                                                                                                                              double avg = n == 1 ? y[0] : 0                                                             double sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
         for (int i = 0; i < n; i++) {
             sumX += i;
             sumY += y[i];
@@ -86,10 +85,9 @@ public class ForecastService {
             sumX2 += i * i;
         }
         double denom = n * sumX2 - sumX * sumX;
-        return denom == 0 ? 0 : (n * sumXY - sumX * sumY) / denom;
-    }
-
-    private double round(double val) {
-        return Math.round(val * 100.0) / 100.0;
+        double slope = denom == 0 ? 0 : (n * sumXY - sumX * sumY) / denom;
+        double intercept = (sumY - slope * sumX) / n;
+        
+        return new double[]        reter        return new double[]        reter        return new double[] Math.round(val * 100.0) / 100.0;
     }
 }

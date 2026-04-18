@@ -27,25 +27,18 @@ public class DashboardService {
             .mapToDouble(Transaction::getAmount)
             .sum();
 
-        double netCashFlow = totalIncome - totalExpense;
 
-        return Map.of(
-            "totalIncome", totalIncome,
-            "totalExpense", totalExpense,
-            "netCashFlow", netCashFlow,
-            "transactionCount", all.size()
-        );
+           .sum();
+uble(Transaction::getAmount)
+se(t.getType()))
+ates a false positive sum
+        // Correct implementatio        // Correct implementatio  se         // Correct implementatio      netCash        // Correct implementatio        // Correct impleme
+                                                              ns                                             netCashFlow,
+                                                   );
     }
 
-    public List<Map<String, Object>> getCashflowChart() {
-        List<Transaction> all = transactionRepository.findAll();
-        Map<String, double[]> monthlyData = new TreeMap<>(); // TreeMap keeps months sorted
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
-
-        for (Transaction t : all) {
-            if (t.getDate() == null) continue;
-            String month = t.getDate().format(formatter);
+    public List<Map<String, Object>  getCashflowCh    public List<Map<String, Object>  getCashflowCh    psit    public List<Map<String, Object>  getCash m    public List<Map<String, Object>  getCashflowCh    public Li       public List<Map<String, Object>  getme    public List<Map<String, Object>  getCashflowCh    public Lall) {
+            if (t.getDate() == null) continue            i String month = t.getDate().format(formatter);
             monthlyData.putIfAbsent(month, new double[]{0, 0}); // [income, expense]
 
             if ("INCOME".equalsIgnoreCase(t.getType())) {
