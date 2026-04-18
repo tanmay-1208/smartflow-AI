@@ -1,15 +1,32 @@
-const API_URL = import.meta.env.VITE_API_URL;
+const BASE = import.meta.env.VITE_API_URL || "";
 
-export const getTransactions = async () => {
-    const res = await fetch(`${API_URL}/api/transactions`, {
-        headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
+const headers = () => {
+  const token = localStorage.getItem("sf_token") || localStorage.getItem("token");
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`
+  };
+};
+
+export const getTransactions = () =>
+  fetch(`${BASE}/api/transactions`, { headers: headers() })
+    .then((r) => {
+      if (!r.ok) throw new Error("Failed to fetch transactions");
+      return r.json();
     });
 
-    if (!res.ok) {
-        throw new Error('Failed to fetch transactions');
-    }
+export const addTransaction = (data) =>
+  fetch(`${BASE}/api/transactions`, {
+    method: "POST",
+    headers: headers(),
+    body: JSON.stringify(data),
+  }).then((r) => r.json());
 
-    return res.json();
-};
+export const deleteTransaction = (id) =>
+  fetch(`${BASE}/api/transactions/${id}`, {
+    method: "DELETE",
+    headers: headers(),
+  }).then((r) => {
+    if (!r.ok) throw new Error("Failed to delete transaction");
+    return r.text().then(text => text ? JSON.parse(text) : {});
+  });
