@@ -6,6 +6,7 @@ export default function Transactions() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("ALL");
   const [isLive, setIsLive] = useState(false);
+  const [realtimeStatus, setRealtimeStatus] = useState("Connecting to Realtime...");
 
   const fetchTransactions = async () => {
     try {
@@ -37,6 +38,9 @@ export default function Transactions() {
   useEffect(() => {
     fetchTransactions();
 
+    // Note: In Supabase dashboard -> Database -> Replication -> supabase_realtime publication 
+    // -> transactions table must be toggled ON for realtime changes to flow through.
+
     const channel = supabase
       .channel('transactions')
       .on(
@@ -44,14 +48,24 @@ export default function Transactions() {
         { event: '*', schema: 'public', table: 'transactions' },
         (payload) => {
           console.log('Realtime change received!', payload);
-          setIsLive(true);
           fetchTransactions();
         }
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        console.log("Supabase realtime status:", status, err);
+        if (status === 'SUBSCRIBED') {
+          setIsLive(true);
+          setRealtimeStatus('Live Sync Active');
+        } else if (status === 'CHANNEL_ERROR') {
+          setIsLive(false);
+          setRealtimeStatus('Realtime unavailable');
+        } else {
+          setIsLive(false);
+          setRealtimeStatus(`Status: ${status}`);
+        }
+      });
 
     return () => {
-      setIsLive(false);
       supabase.removeChannel(channel);
     };
   }, []);
@@ -72,10 +86,10 @@ export default function Transactions() {
             <h1 className="text-3xl font-extrabold tracking-tight">Transactions</h1>
             <div className="flex items-center gap-2 text-sm text-gray-400">
               <div className="relative flex h-2.5 w-2.5">
-                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isLive ? 'bg-green-400' : 'bg-gray-500'}`}></span>
+                <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${isLive ? 'animate-ping bg-green-400' : 'bg-gray-500'}`}></span>
                 <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isLive ? 'bg-green-500' : 'bg-gray-500'}`}></span>
               </div>
-              {isLive ? 'Live Sync Active' : 'Connecting to Realtime...'}
+              {realtimeStatus}
             </div>
           </div>
           

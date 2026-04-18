@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useAuth } from "../context/AuthContext";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -15,7 +15,7 @@ const StatCard = ({ label, value, icon: Icon, color }) => (
     <div>
       <p className="text-xs text-gray-500 uppercase tracking-widest mb-1">{label}</p>
       <p className={`text-2xl font-bold ${color}`}>
-        ₹{Math.abs(value).toLocaleString("en-IN")}
+        {value === undefined ? "0" : `₹${Math.abs(value).toLocaleString("en-IN")}`}
       </p>
     </div>
     <div className={`p-3 rounded-xl bg-gray-800`}>
@@ -47,6 +47,9 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Added state for Fix 1: year selector
+  const [selectedYear, setSelectedYear] = useState("");
+
   useEffect(() => {
     const headers = { Authorization: `Bearer ${token}` };
     Promise.all([
@@ -56,6 +59,15 @@ export default function Dashboard() {
       .then(([summaryData, chartData]) => {
         setSummary(summaryData);
         setChart(chartData);
+
+        // Derive available years from "MMM yyyy" format (e.g. "Apr 2026")
+        if (chartData && chartData.length > 0) {
+          const years = Array.from(new Set(chartData.map(d => d.month.split(" ")[1]))).sort((a,b) => b - a);
+          if (years.length > 0) {
+            setSelectedYear(years[0]); // Select most recent year
+          }
+        }
+        
         setLoading(false);
       })
       .catch(() => {
@@ -63,6 +75,18 @@ export default function Dashboard() {
         setLoading(false);
       });
   }, [token]);
+
+  // Derive filtered chart data based on selected year
+  const filteredChart = useMemo(() => {
+    if (!selectedYear || chart.length === 0) return chart;
+    return chart.filter(d => d.month.endsWith(selectedYear));
+  }, [chart, selectedYear]);
+
+  // Available years for dropdown
+  const availableYears = useMemo(() => {
+    if (!chart || chart.length === 0) return [];
+    return Array.from(new Set(chart.map(d => d.month.split(" ")[1]))).sort((a,b) => b - a);
+  }, [chart]);
 
   if (loading) {
     return (
@@ -108,10 +132,11 @@ export default function Dashboard() {
           icon={DollarSign}
           color={summary.netCashFlow >= 0 ? "text-blue-400" : "text-red-400"}
         />
+        {/* Fix 2: transactions count mapped correctly */}
         <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5 flex items-center justify-between">
           <div>
             <p className="text-xs text-gray-500 uppercase tracking-widest mb-1">Transactions</p>
-            <p className="text-2xl font-bold text-white">{summary.transactionCount}</p>
+            <p className="text-2xl font-bold text-white">{summary.transactionCount ?? 0}</p>
           </div>
           <div className="p-3 rounded-xl bg-gray-800">
             <Activity size={20} className="text-yellow-400" />
@@ -121,16 +146,31 @@ export default function Dashboard() {
 
       {/* Chart */}
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-        <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-widest mb-6">
-          Monthly Cash Flow
-        </h2>
-        {chart.length === 0 ? (
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-widest">
+            Monthly Cash Flow
+          </h2>
+          {/* Fix 1: Year Selector */}
+          {availableYears.length > 0 && (
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="bg-gray-800 border border-gray-700 text-gray-300 text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              {availableYears.map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          )}
+        </div>
+        
+        {filteredChart.length === 0 ? (
           <div className="flex items-center justify-center h-64 text-gray-600 text-sm">
-            No chart data available
+            No chart data available for {selectedYear}
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={chart} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+            <BarChart data={filteredChart} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
               <XAxis
                 dataKey="month"

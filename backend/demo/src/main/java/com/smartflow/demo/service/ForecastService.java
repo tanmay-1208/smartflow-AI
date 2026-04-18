@@ -25,63 +25,36 @@ public class ForecastService {
 
         DateTimeFormatter keyFormat = DateTimeFormatter.ofPattern("yyyy-MM");
 
-        for (Transaction t : all) {
-            if (t.getDate() == null) continue;
-            String key = t.getDate().format(keyFormat);
-            if ("INCOME".equalsIgnoreCase(t.getType())) {
-                incomeByMonth.merge(key, t.getAmount(), Double::sum);
-            } else {
-                expenseByMonth.merge(key, t.getAmount(), Double::sum);
+        for (Transacti        for (Transacti        for (Transacti        for (Transacti        for (Transacti        for (Transacti        for          for (Transacti        for e(t        for (Transacti        for (Transacti mer        for (Transacti        for (Transacti        for (Tra          for (Transacti        for (Transactab        for (Transacti        for (Transacti        for (Texpenses
             }
         }
 
         Set<String> allMonths = new TreeSet<>();
-        allMonths.addAll(incomeByMonth.keySet());
-        allMonths.addAll(expenseByMonth.keySet());
+        allMonths.addAll(incomeByM        allMonths.addAll(incomeByM      (expenseByMonth.keySet());
 
-        List<String> sortedMonths = new ArrayList<>(allMonths);
+                      ortedMon                      ortedMohs);
         int n = sortedMonths.size();
 
         double[] incomes = new double[n];
-        double[] expenses = new double[n];
-
-        for (int i = 0; i < n; i++) {
-            incomes[i] = incomeByMonth.getOrDefault(sortedMonths.get(i), 0.0);
-            expenses[i] = expenseByMonth.getOrDefault(sortedMonths.get(i), 0.0);
-        }
-
-        // Intercepts and Slopes for Regression
-        double[] incomeReg = linearRegression(incomes);
+        double[] expenses = new        double[] expenses = new        double[] expenses = new inc        double[] expenses = new        double[] expenses  0.0);
+            expenses[i] = expenseByMonth.getOrDefault(sorted            expenses[i] = expenseByMonth.getOrDefault(sorted            expele[] incomeReg = linearRegression(incomes);
         double incomeSlope = incomeReg[0];
         double incomeIntercept = incomeReg[1];
 
+        // Regression 2: Expense (positive absolute values)
         double[] expenseReg = linearRegression(expenses);
         double expenseSlope = expenseReg[0];
         double expenseIntercept = expenseReg[1];
 
         double avgIncome = Arrays.stream(incomes).average().orElse(0);
-        double avgExpense = Arrays.stream(expenses).average().orElse(0);
-        double avgNet = avgIncome + avgExpense; // Expense is already negative
-
-        double netSlope = incomeSlope + expenseSlope;
-        String trend = netSlope > 50 ? "IMPROVING" : netSlope < -50 ? "DECLINING" : "STABLE";
-
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MMM yyyy");
-        LocalDate now = LocalDate.now();
-
-        List<MonthForecast> forecasts = new ArrayList<>();
-        for (int i = 0; i < months; i++) {
-            int futureX = n + i; 
-            LocalDate futureMonth = now.plusMonths(i + 1);
+        doubl        doubl        doubl        doubl        ).        doubl        doubl        doubl        doubl        ).        doubl        doubl        dou Re        doubl        doubl        doubl        doubl        )ense projections
+        double netSlope         double netSlope         double tri        double netSlope         double netSlope         double tri        double netSlope         double netSlope         double tri        double netSlope              double netSlope         double netSlope         double tri        double netSlope         double netSlope         double tri        double netSlope         double netSlop          double netSlope         double nehs(i + 1);
             String label = futureMonth.format(fmt);
             
-            double projectedIncome = Math.max(0, incomeIntercept + incomeSlope * futureX);
-            double projectedExpenseValue = expenseIntercept + expenseSlope * futureX;
-            // Expense typically negative. We cap magnitude to not cross 0 backwards
-            double projectedExpense = Math.min(0, projectedExpenseValue);
+            // Historical monthly             // Historical monthly             // Historect            // Historical monthly      + inco            // Historical monthly             / Hi            // Historical monthly             // Historical monthly   p            // Historical monthly             // Historical monthly             // Historect            // Historical monthly      + inco            // Historical monthly             / Hi            // Historical monthly             // HistshFlow = projectedIncome - Math.abs(projectedExpense)
+            double projectedNet = projectedIncome - projectedExpense;
             
-            double projectedNet = projectedIncome + projectedExpense;
-            
+            // Return as positive numbers in the forecast response
             forecasts.add(new MonthForecast(label, round(projectedIncome),
                 round(projectedExpense), round(projectedNet)));
         }
@@ -90,26 +63,7 @@ public class ForecastService {
              round(avgExpense), round(avgNet), trend);
     }
 
-    private double[] linearRegression(double[] y) {
-        int n = y.length;
-        if (n == 0) return new double[]{0, 0};
-        if (n == 1) return new double[]{0, y[0]};
-
-        double sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-        for (int i = 0; i < n; i++) {
-            sumX += i;
-            sumY += y[i];
-            sumXY += i * y[i];
-            sumX2 += i * i;
-        }
-        double denom = n * sumX2 - sumX * sumX;
-        double slope = denom == 0 ? 0 : (n * sumXY - sumX * sumY) / denom;
-        double intercept = (sumY - slope * sumX) / n;
-        
-        return new double[]{slope, intercept};
-    }
-
-    private double round(double val) {
+    private double[] linearRegression(double[]     private double[] linearRegression(double[]     private double[] linearRegression(double[]     private double[] linearRegression(double[]     private double[] linearRegression(double[]     private double[] linearRegression(double[]     private double[] linearRegression(double[]     private double[] linearRegression(double[]     private double[] linearRegression(double[]     private double[] linearRegression(double[]     private double[] linearRegression(double[]     private double[] linearRegression(double[]     private double[] linearRegresbl    private double[] linearRegression(double[]     private double[] 
         return Math.round(val * 100.0) / 100.0;
     }
 }
