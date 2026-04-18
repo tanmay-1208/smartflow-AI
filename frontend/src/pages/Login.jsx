@@ -22,8 +22,8 @@ export default function Login() {
         ? await loginUser({ email: form.email, password: form.password })
         : await registerUser(form);
 
-      if (res.token) {
-        login(res.token, res.user);
+      if (res.id) {
+        login(String(res.id), res);
         navigate("/dashboard");
       } else {
         setError(res.message || "Something went wrong");
