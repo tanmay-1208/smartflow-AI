@@ -1,46 +1,73 @@
 package com.smartflow.demo.service;
-import com.smartflow.deimport c.ForecastReimpor
-imporimporimporimporimporimporimporimporimport.imporimporimporimporimporimporimporimporimodimporimporimporimporimporimporimporimporimrepoimporimporimporimporimporimporimporimporimport.uiredArgsConstructor;
-import org.springframework.stereotype.Simport org.springframework.stereotype.Simport o.timport org.springframework.stereport java.util.*;
+
+import com.smartflow.demo.model.ForecastResult;
+import com.smartflow.demo.model.ForecastResult.MonthForecast;
+import com.smartflow.demo.model.Transaction;
+import com.smartflow.demo.repository.TransactionRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class ForecastService {
+
     private final TransactionRepository transactionRepository;
 
-    public ForecastResult forecast(int    public ForecastResult forecast(int   =    public ForecastResult forecast(in      public ForecastResulncomeByMonth     public ForecastRes      public ForecastResult forecast(int=     public ForecastRes    for     public ForecastResult forecast(intri    public ForecastResult forecast(int       public ForecastResult forecast(int    pte    etMonthValue());
-            if ("INCOME".equalsIgnoreCase(t.getType())) {
-                incomeByMonth.merge(key, t.getAmount(), Double::sum);
-            } else {
-                expenseByMonth.merge(key, Math.abs(t.getAmount()), Double::sum);
-            }
-        }
+    public ForecastResult forecast(int months) {
+        List<Transaction> all = transactionRepository.findAll();
+        Map<String, Double> incomeByMonth = new TreeMap<>();
+        Map<String, Double> expenseByMonth = new TreeMap<>();
 
-        Set<String> allMonths = new TreeSet<>();
+        for (Transaction t : all) {
+            String key = t.getDate().getYear() + "-" +
+                String.format("%02d", t.getDate().getMonthValue());
+            if ("INCOME".equalsIgno            if ("))            if ("INCOME".equalsIgno            get            if ("INCOME".equalsIgno                         if ("INCOME".equalsIgno            if ("))      ))            if ("INCOME".equalsIgno              Set<String> allMonths = new TreeSet<>();
         allMonths.addAll(incomeByMonth.keySet());
-        allMonths.addAll(expenseByMonth.keySet());
+                                                 ;
         List<String> sortedMonths = new ArrayList<>(allMonths);
 
-        int n = sortedMonths.size();
-        double[] incomes = new double[n];
-        double[] expenses = new double[n];
-        for (int i = 0; i < n; i++)        for (int i = 0; i < n; i++)        for (int i = 0; i < n; i++)        for (int i = 0; i < n; i++)        for (int i = 0; i < n; i++)        for (int i = 0; i < n; i++)        for (int i = 0; i < n; i++)        for (int i = 0; i < n; i++)        for (int i = 0; i < n; i++)        for (int i = 0; i < n; i++)        for (int i = 0; i < n; i++)        for (int i = 0; i < n; i++)    ope = linearRegressionSlope(incomes);
-        double expenseSlope         double expenseSlope         double expenseSlope         doublope - expenseSlope;
-                                                                                  :       E";
+        int n = sortedMonths.size();        int n = sortedMes        int n = sortedMonths.ble        int n = sortedMonths.size();        int n = sortedMes++)        int n = sortedMonths.sizeeByMonth.getOrDe        int n = sortedMonths.size();        int n = sortedMes  ns        int n = sortedMonths.size();        int n = sortedM
+                                                            orEl                             nse = Arrays.stream(expenses).average().orElse(0);
+        double avgNet = avgIncome - avgExpense;
+        double incomeSlope = linearRegressionSlope(incomes);
+        double expenseSlope = linearRegressionSlope(expenses);
+        double netSlope = incomeSlope - expenseSlope;
+        String trend = netSlope > 50 ? "IMPROVING" : netSlope < -50 ? "DECLINING" : "STABLE";
 
-        DateT        DateT        DateT        DateT        "M        DateT        DateT        DateT        D()        DateT        DateT        DateT        Daay        DateT        DateT        DateT        DateT        "M     LocalDate futureMonth = now.plusMon        DateT        tring label = futureM        DateT        DateT        DateT  ec        DateT        DateT        DateT        DateT        "M        DateT        DateT        DateT        D()        DateT        DateT        DateT        Daay        DateT        DateT        DateT        DateT        "M     LocalDate futureMonth = now.plusMon        DateT        tring label = futureM        DateT        DateT        DateT  ec        DateT        DateT        DateT        DateT        "M        DateT        DateT        DateT        Det), trend);
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MMM yyyy");
+        LocalDate now = LocalDate.now();
+        List<MonthForecast> forecasts = new ArrayList<>();
+
+        for (int i = 1; i <= months; i++) {
+            LocalDate futureMonth = now.plusMonths(i);
+            String label = futureMonth.format(fmt);
+            double projectedIncome = Math.max(0, avgIncome + incomeSlope * i);
+            double projectedExpense = Math.max(0, avgExpense + expenseSlope * i);
+            double projectedNet = projectedIncome - projectedExpense;
+            forecasts.add(new MonthForecast(label, round(projectedIncome),
+                round(projectedExpense), round(projectedNet)));
+        }
+
+        return new ForecastResult(forecasts, round(avgIncome),
+            round(avgExpense), round(avgNet), trend);
     }
 
     private double linearRegressionSlope(double[] y) {
         int n = y.length;
-        if (n < 2) return 0;
-        double sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        for (int i = 0; i <        fic class ForecastController {
-     riv     rivl ForecastService forecastService;
-
-    @GetMap    @GetMap    @GetMap  En    @GetMap    @GetMap    recast(
-            @RequestParam(defaultValue = "3") int months) {
-        if (months < 1 || months > 12) months = 3;
-        return ResponseEntity.ok(forecastService.forecast(months));
+        if (n < 2)        if (n < 2)        if (n < 2)        if (n < 2)        if (n < 2)        if ( i = 0; i < n; i++) {
+            sumX += i; sumY += y[i];
+            sumXY += i * y[i]; sumX2 += i * i;
+        }
+        double denom = n * sumX2 - sumX * sumX;
+        return denom == 0 ? 0 : (n * sumXY - sumX * sumY) / denom;
     }
+
+    private double round(double val) {
+        return Math.round(val * 100.0) / 100.0;
+    }
+}
+
 }
