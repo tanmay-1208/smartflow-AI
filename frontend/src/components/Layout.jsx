@@ -1,9 +1,6 @@
-import {
-  Bot, useState } from "react";
-import {
-  Bot, Link, useLocation, useNavigate } from "react-router-dom";
-import {
-  Bot, useAuth } from "../context/AuthContext";
+import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import {
   Bot,
   LayoutDashboard,
