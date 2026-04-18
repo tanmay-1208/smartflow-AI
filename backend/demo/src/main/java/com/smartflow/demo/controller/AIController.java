@@ -8,7 +8,7 @@ import org.springframework.web.client.RestTemplate;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/ai")
+@RequestMapping("/api/ai-raw")
 @CrossOrigin(origins = "*")
 public class AIController {
 
@@ -16,7 +16,7 @@ public class AIController {
     private String groqApiKey;
 
     private static final String GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-    private static final String MODEL = "llama3-8b-8192";
+    private static final String MODEL = "llama-3.1-8b-instant";
 
     // POST /api/ai/advise
     // Body: { "question": "...", "transactions": [...] }

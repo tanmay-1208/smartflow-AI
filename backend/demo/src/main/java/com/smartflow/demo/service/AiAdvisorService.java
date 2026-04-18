@@ -2,23 +2,31 @@ package com.smartflow.demo.service;
 
 import com.smartflow.demo.model.Transaction;
 import com.smartflow.demo.repository.TransactionRepository;
-import org.springframework.ai.chat.ChatClient;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 public class AiAdvisorService {
 
     private final TransactionRepository transactionRepository;
-    private final ChatClient chatClient;
+    private final RestTemplate restTemplate = new RestTemplate();
 
-    @Autowired
-    public AiAdvisorService(TransactionRepository transactionRepository, ChatClient chatClient) {
+    @Value("${groq.api.key}")
+    private String groqApiKey;
+
+    @Value("${groq.api.url:https://api.groq.com/openai/v1/chat/completions}")
+    private String groqApiUrl;
+
+    private static final String MODEL = "llama-3.1-8b-instant";
+
+    public AiAdvisorService(TransactionRepository transactionRepository) {
         this.transactionRepository = transactionRepository;
-        this.chatClient = chatClient;
     }
 
     public String getFinancialAdvice(String userMessage) {
@@ -72,19 +80,43 @@ public class AiAdvisorService {
                 totalIncome, totalExpense, netCashFlow, topExpensesStr, recentTxStr
         );
 
-        String prompt = String.format(
-                "You are an expert financial advisor for an Indian small business.\n" +
-                "Here is the user's current financial data context:\n%s\n\n" +
-                "User question: %s\n\n" +
-                "Give specific, actionable, and professional advice in 3-5 sentences.",
+        String systemPrompt = "You are an expert financial advisor for an Indian small business. "
+                + "You analyze cash flow data and give practical, actionable advice. "
+                + "Keep answers concise (3-5 sentences max). Focus on rupees (₹), Indian business context.";
+
+        String userPrompt = String.format(
+                "Here is the user's current financial data context:\n%s\n\nUser question: %s\n\nGive specific, actionable, and professional advice in 3-5 sentences.",
                 contextStr, userMessage
         );
 
+        // Build Groq API request
+        Map<String, Object> requestBody = Map.of(
+            "model", MODEL,
+            "messages", List.of(
+                Map.of("role", "system", "content", systemPrompt),
+                Map.of("role", "user", "content", userPrompt)
+            ),
+            "max_tokens", 500
+        );
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(groqApiKey);
+
         try {
-            return chatClient.call(prompt);
+            ResponseEntity<Map> response = restTemplate.postForEntity(
+                groqApiUrl,
+                new HttpEntity<>(requestBody, headers),
+                Map.class
+            );
+
+            List<Map> choices = (List<Map>) response.getBody().get("choices");
+            Map message = (Map) choices.get(0).get("message");
+            return (String) message.get("content");
+
         } catch (Exception e) {
             e.printStackTrace();
-            return "Sorry, AI Advisor is unavailable right now. Please try again later.";
+            return "Sorry, AI Advisor is unavailable right now. Please try again later. Error: " + e.getMessage();
         }
     }
 }
