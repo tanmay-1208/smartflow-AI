@@ -8,7 +8,7 @@ import Forecast from "./pages/Forecast";
 
 function ProtectedRoute({ children }) {
   const { token } = useAuth();
-  return token ? children : <Navigate to="/login" replace />;
+  return token ? <Layout>{children}</Layout> : <Navigate to="/login" replace />;
 }
 
 export default function App() {
