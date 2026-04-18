@@ -25,7 +25,9 @@ public class ForecastService {
 
         for (Transaction t : all) {
             String key = t.getDate().getYear() + "-" +
-                                                                                                                                              incomeByMonth.merge(key, t.getAmount(), Double::sum);
+                String.format("%02d", t.getDate().getMonthValue());
+            if ("INCOME".equalsIgnoreCase(t.getType())) {
+                incomeByMonth.merge(key, t.getAmount(), Double::sum);
             } else {
                 expenseByMonth.merge(key, t.getAmount(), Double::sum);
             }
@@ -35,7 +37,8 @@ public class ForecastService {
         allMonths.addAll(incomeByMonth.keySet());
         allMonths.addAll(expenseByMonth.keySet());
 
-        List<String> sortedMonths =         List<String> sortedMonths =   t n = sortedMonths.size();
+        List<String> sortedMonths = new ArrayList<>(allMonths);
+        int n = sortedMonths.size();
 
         double[] incomes = new double[n];
         double[] expenses = new double[n];
@@ -46,7 +49,13 @@ public class ForecastService {
 
         double avgIncome = Arrays.stream(incomes).average().orElse(0);
         double avgExpense = Arrays.stream(expenses).average().orElse(0);
-        double avgNe        double avgNe        double avgNe        double avgNe        double avgNe        double avgNe        double avgNe        double avgNe        double avgNe        double avgNe        doublexp        double avg  S        double avgNe        double avgNe        double avgNe      INING" : "STABLE";
+        double avgNet = avgIncome - avgExpense;
+
+        double incomeSlope = linearRegressionSlope(incomes);
+        double expenseSlope = linearRegressionSlope(expenses);
+        double netSlope = incomeSlope - expenseSlope;
+
+        String trend = netSlope > 50 ? "IMPROVING" : netSlope < -50 ? "DECLINING" : "STABLE";
 
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MMM yyyy");
         LocalDate now = LocalDate.now();
