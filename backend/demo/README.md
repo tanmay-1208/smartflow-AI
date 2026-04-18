@@ -8,4 +8,4 @@ pinned: false
 ---
 
 # SmartFlow Backend
-Spring Boot backend for SmartFlow AI financial management app.
+Spring Boot backend for SmartFlow AI.
