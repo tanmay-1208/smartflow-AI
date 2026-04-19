@@ -10,6 +10,13 @@ import {
 
 const API = import.meta.env.VITE_API_URL;
 
+const formatCurrency = (v) => {
+  if (v >= 10000000) return `${(v / 10000000).toFixed(1).replace(/\.0$/, "")}Cr`;
+  if (v >= 100000) return `${(v / 100000).toFixed(1).replace(/\.0$/, "")}L`;
+  if (v >= 1000) return `${(v / 1000).toFixed(0)}k`;
+  return String(v);
+};
+
 const StatCard = ({ label, value, icon: Icon, color }) => (
   <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5 flex items-center justify-between">
     <div>
@@ -184,11 +191,11 @@ export default function Dashboard() {
                 tickLine={false}
               />
               <YAxis
-                tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
+                tickFormatter={formatCurrency}
                 tick={{ fill: "#6b7280", fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
-                width={55}
+                width={50}
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend wrapperStyle={{ fontSize: "12px", color: "#9ca3af", paddingTop: "12px" }} />

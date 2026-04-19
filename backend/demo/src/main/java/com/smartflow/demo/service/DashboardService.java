@@ -45,25 +45,25 @@ public class DashboardService {
             ? transactionRepository.findByUserId(userId)
             : transactionRepository.findAll();
 
-        Map<String, double[]> monthlyData = new LinkedHashMap<>();
+        Map<java.time.YearMonth, double[]> monthlyData = new TreeMap<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM yyyy");
 
         for (Transaction t : all) {
             if (t.getDate() == null) continue;
-            String month = t.getDate().format(formatter);
-            monthlyData.putIfAbsent(month, new double[]{0, 0}); // [income, expense]
+            java.time.YearMonth ym = java.time.YearMonth.from(t.getDate());
+            monthlyData.putIfAbsent(ym, new double[]{0, 0}); // [income, expense]
 
             if ("INCOME".equalsIgnoreCase(t.getType())) {
-                monthlyData.get(month)[0] += t.getAmount();
+                monthlyData.get(ym)[0] += t.getAmount();
             } else {
-                monthlyData.get(month)[1] += t.getAmount(); // amounts are negative
+                monthlyData.get(ym)[1] += t.getAmount(); // amounts are negative
             }
         }
 
         List<Map<String, Object>> result = new ArrayList<>();
-        for (Map.Entry<String, double[]> entry : monthlyData.entrySet()) {
+        for (Map.Entry<java.time.YearMonth, double[]> entry : monthlyData.entrySet()) {
             result.add(Map.of(
-                "month", entry.getKey(),
+                "month", entry.getKey().format(formatter),
                 "income", entry.getValue()[0],
                 "expense", Math.abs(entry.getValue()[1]) 
             ));
