@@ -18,7 +18,7 @@ public class TransactionService {
     }
 
     public List<Transaction> getTransactionsByUser(Long userId) {
-        return transactionRepository.findByUserIdOrUnassignedOrderByDateDesc(userId);
+        return transactionRepository.findByUserIdOrderByDateDesc(userId);
     }
 
     public Transaction addTransaction(Transaction transaction) {

@@ -31,7 +31,7 @@ public class AiAdvisorService {
 
     public String getFinancialAdvice(String userMessage, Long userId) {
         List<Transaction> allTransactions = userId != null
-            ? transactionRepository.findByUserIdOrUnassignedOrderByDateDesc(userId)
+            ? transactionRepository.findByUserIdOrderByDateDesc(userId)
             : transactionRepository.findAllByOrderByDateDesc();
 
         double totalIncome = 0.0;

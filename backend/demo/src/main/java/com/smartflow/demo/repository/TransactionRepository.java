@@ -12,14 +12,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     List<Transaction> findByUserIdOrderByDateDesc(Long userId);
     List<Transaction> findByUserId(Long userId);
 
-    // Include transactions that belong to this user OR have no owner (legacy data)
-    @Query("SELECT t FROM Transaction t WHERE t.userId = :userId OR t.userId IS NULL ORDER BY t.date DESC")
-    List<Transaction> findByUserIdOrUnassignedOrderByDateDesc(@Param("userId") Long userId);
-
-    @Query("SELECT t FROM Transaction t WHERE t.userId = :userId OR t.userId IS NULL")
-    List<Transaction> findByUserIdOrUnassigned(@Param("userId") Long userId);
-
-    // Assign all unowned transactions to a user
+    // Assign all unowned transactions to a user (used by migration)
     @Modifying
     @Query("UPDATE Transaction t SET t.userId = :userId WHERE t.userId IS NULL")
     int assignUnownedTransactions(@Param("userId") Long userId);
