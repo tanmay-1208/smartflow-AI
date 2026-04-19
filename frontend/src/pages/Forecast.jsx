@@ -92,7 +92,7 @@ export default function Forecast() {
             <h1 className="text-3xl font-bold text-white">Cash Flow Forecast</h1>
           </div>
           <p className="text-gray-400 mt-1">
-            AI-powered predictions using {data?.modelType || "advanced smoothing algorithms"}
+            ML-based predictions using {data?.modelType || "advanced smoothing algorithms"}
           </p>
         </div>
 
