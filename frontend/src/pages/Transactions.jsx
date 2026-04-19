@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
 import { addTransaction } from "../api/transactions";
+import { useCollab } from "../context/CollabContext";
 import { Plus, X, TrendingUp, TrendingDown, IndianRupee, CalendarDays, Tag, FileText, Loader2 } from "lucide-react";
 
 const CATEGORIES = {
@@ -14,6 +15,7 @@ export default function Transactions() {
   const [filter, setFilter] = useState("ALL");
   const [isLive, setIsLive] = useState(false);
   const [realtimeStatus, setRealtimeStatus] = useState("Connecting to Realtime...");
+  const collab = useCollab();
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -149,6 +151,7 @@ export default function Transactions() {
       };
 
       await addTransaction(payload);
+      collab?.broadcastActivity(`added a ₹${Math.abs(payload.amount).toLocaleString("en-IN")} ${payload.type.toLowerCase()} transaction`, "transaction");
       setSuccessMsg("Transaction added successfully!");
       setTimeout(() => {
         setShowModal(false);

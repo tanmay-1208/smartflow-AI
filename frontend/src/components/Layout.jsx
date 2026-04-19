@@ -11,6 +11,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
+import CollaborationPanel from "./CollaborationPanel";
 
 const NAV_ITEMS = [
   { label: "Dashboard",    path: "/dashboard",    icon: LayoutDashboard },
@@ -65,9 +66,12 @@ export default function Layout({ children }) {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-5 space-y-1">
+        <nav className="flex-1 px-3 py-5 space-y-1 overflow-y-auto">
           <NavLinks />
         </nav>
+
+        {/* Collaboration Panel */}
+        <CollaborationPanel />
 
         {/* Logout */}
         <div className="px-3 pb-5">
