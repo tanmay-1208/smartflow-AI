@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 public class AiAdvisorService {
 
     private final TransactionRepository transactionRepository;
+    private final TeamService teamService;
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Value("${groq.api.key}")
@@ -26,14 +27,21 @@ public class AiAdvisorService {
     // Upgraded: 70B model for much better financial reasoning
     private static final String MODEL = "llama-3.3-70b-versatile";
 
-    public AiAdvisorService(TransactionRepository transactionRepository) {
+    public AiAdvisorService(TransactionRepository transactionRepository, TeamService teamService) {
         this.transactionRepository = transactionRepository;
+        this.teamService = teamService;
     }
 
     public String getFinancialAdvice(String userMessage, Long userId) {
-        List<Transaction> allTransactions = userId != null
-            ? transactionRepository.findByUserIdOrderByDateDesc(userId)
-            : transactionRepository.findAllByOrderByDateDesc();
+        List<Transaction> allTransactions;
+        if (userId != null) {
+            List<Long> ids = teamService.getEffectiveUserIds(userId);
+            allTransactions = ids.size() == 1
+                ? transactionRepository.findByUserIdOrderByDateDesc(ids.get(0))
+                : transactionRepository.findByUserIdInOrderByDateDesc(ids);
+        } else {
+            allTransactions = transactionRepository.findAllByOrderByDateDesc();
+        }
 
         if (allTransactions.isEmpty()) {
             return callLLM(

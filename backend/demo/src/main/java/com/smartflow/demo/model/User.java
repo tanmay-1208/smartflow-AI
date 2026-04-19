@@ -23,6 +23,9 @@ public class User {
     @Column(name = "business_name")
     private String businessName;
 
+    @Column(name = "team_id")
+    private Long teamId;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

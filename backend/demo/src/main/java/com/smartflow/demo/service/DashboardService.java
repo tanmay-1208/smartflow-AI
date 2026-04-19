@@ -2,7 +2,6 @@ package com.smartflow.demo.service;
 
 import com.smartflow.demo.model.Transaction;
 import com.smartflow.demo.repository.TransactionRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -11,13 +10,24 @@ import java.time.format.DateTimeFormatter;
 @Service
 public class DashboardService {
 
-    @Autowired
-    private TransactionRepository transactionRepository;
+    private final TransactionRepository transactionRepository;
+    private final TeamService teamService;
+
+    public DashboardService(TransactionRepository transactionRepository, TeamService teamService) {
+        this.transactionRepository = transactionRepository;
+        this.teamService = teamService;
+    }
+
+    private List<Transaction> getTransactions(Long userId) {
+        if (userId == null) return transactionRepository.findAll();
+        List<Long> ids = teamService.getEffectiveUserIds(userId);
+        return ids.size() == 1
+            ? transactionRepository.findByUserId(ids.get(0))
+            : transactionRepository.findByUserIdIn(ids);
+    }
 
     public Map<String, Object> getSummary(Long userId) {
-        List<Transaction> all = userId != null
-            ? transactionRepository.findByUserId(userId)
-            : transactionRepository.findAll();
+        List<Transaction> all = getTransactions(userId);
 
         double totalIncome = all.stream()
             .filter(t -> "INCOME".equalsIgnoreCase(t.getType()))
@@ -29,7 +39,6 @@ public class DashboardService {
             .mapToDouble(Transaction::getAmount)
             .sum();
 
-        // Expenses are already negative, so we add them to get net cash flow
         double netCashFlow = totalIncome + totalExpense;
 
         return Map.of(
@@ -41,9 +50,7 @@ public class DashboardService {
     }
 
     public List<Map<String, Object>> getCashflowChart(Long userId) {
-        List<Transaction> all = userId != null
-            ? transactionRepository.findByUserId(userId)
-            : transactionRepository.findAll();
+        List<Transaction> all = getTransactions(userId);
 
         Map<String, double[]> monthlyData = new LinkedHashMap<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM yyyy");
@@ -51,12 +58,12 @@ public class DashboardService {
         for (Transaction t : all) {
             if (t.getDate() == null) continue;
             String month = t.getDate().format(formatter);
-            monthlyData.putIfAbsent(month, new double[]{0, 0}); // [income, expense]
+            monthlyData.putIfAbsent(month, new double[]{0, 0});
 
             if ("INCOME".equalsIgnoreCase(t.getType())) {
                 monthlyData.get(month)[0] += t.getAmount();
             } else {
-                monthlyData.get(month)[1] += t.getAmount(); // amounts are negative
+                monthlyData.get(month)[1] += t.getAmount();
             }
         }
 
