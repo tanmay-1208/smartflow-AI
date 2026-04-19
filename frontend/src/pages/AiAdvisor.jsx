@@ -94,7 +94,7 @@ export default function AiAdvisor() {
       <div className="p-4 md:p-6 border-t border-gray-800 bg-gray-900/50 backdrop-blur-sm">
         {messages.length === 1 && (
           <div className="flex flex-wrap gap-2 mb-4">
-            {suggestedPrompts.map((prompt, idx) => (
+            {SUGGESTIONS.map((prompt, idx) => (
               <button
                 key={idx}
                 onClick={() => handleSend(prompt)}
