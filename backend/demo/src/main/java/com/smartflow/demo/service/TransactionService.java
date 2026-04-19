@@ -4,6 +4,7 @@ import com.smartflow.demo.model.Transaction;
 import com.smartflow.demo.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
@@ -17,7 +18,7 @@ public class TransactionService {
     }
 
     public List<Transaction> getTransactionsByUser(Long userId) {
-        return transactionRepository.findByUserIdOrderByDateDesc(userId);
+        return transactionRepository.findByUserIdOrUnassignedOrderByDateDesc(userId);
     }
 
     public Transaction addTransaction(Transaction transaction) {
@@ -26,5 +27,10 @@ public class TransactionService {
 
     public void deleteTransaction(Long id) {
         transactionRepository.deleteById(id);
+    }
+
+    @Transactional
+    public int claimUnownedTransactions(Long userId) {
+        return transactionRepository.assignUnownedTransactions(userId);
     }
 }

@@ -16,7 +16,7 @@ public class DashboardService {
 
     public Map<String, Object> getSummary(Long userId) {
         List<Transaction> all = userId != null
-            ? transactionRepository.findByUserId(userId)
+            ? transactionRepository.findByUserIdOrUnassigned(userId)
             : transactionRepository.findAll();
 
         double totalIncome = all.stream()
@@ -42,7 +42,7 @@ public class DashboardService {
 
     public List<Map<String, Object>> getCashflowChart(Long userId) {
         List<Transaction> all = userId != null
-            ? transactionRepository.findByUserId(userId)
+            ? transactionRepository.findByUserIdOrUnassigned(userId)
             : transactionRepository.findAll();
 
         Map<String, double[]> monthlyData = new LinkedHashMap<>();

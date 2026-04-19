@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/transactions")
@@ -32,5 +33,12 @@ public class TransactionController {
     public ResponseEntity<?> delete(@PathVariable Long id) {
         transactionService.deleteTransaction(id);
         return ResponseEntity.ok().build();
+    }
+
+    // One-time migration: assign unowned transactions to the requesting user
+    @PostMapping("/claim")
+    public ResponseEntity<?> claimUnowned(@RequestHeader(value = "X-User-Id") Long userId) {
+        int count = transactionService.claimUnownedTransactions(userId);
+        return ResponseEntity.ok(Map.of("claimed", count, "message", count + " transactions assigned to your account"));
     }
 }
