@@ -58,6 +58,10 @@ public class AiAdvisorService {
         double netCashFlow = totalIncome - totalExpense;
         double savingsRate = totalIncome > 0 ? ((totalIncome - totalExpense) / totalIncome) * 100 : 0;
 
+        // Final copies for use in lambdas
+        final double finalTotalIncome = totalIncome;
+        final double finalTotalExpense = totalExpense;
+
         context.append(String.format("=== FINANCIAL SUMMARY ===\n"));
         context.append(String.format("Total Income: ₹%.2f\n", totalIncome));
         context.append(String.format("Total Expenses: ₹%.2f\n", totalExpense));
@@ -113,7 +117,7 @@ public class AiAdvisorService {
             .sorted((a, b) -> Double.compare(b.getValue(), a.getValue()))
             .limit(5)
             .forEach(e -> {
-                double pct = totalExpense > 0 ? (e.getValue() / totalExpense) * 100 : 0;
+                double pct = finalTotalExpense > 0 ? (e.getValue() / finalTotalExpense) * 100 : 0;
                 context.append(String.format("  %s: ₹%.0f (%.1f%% of expenses)\n",
                     e.getKey(), e.getValue(), pct));
             });
@@ -130,7 +134,7 @@ public class AiAdvisorService {
         incomeSources.entrySet().stream()
             .sorted((a, b) -> Double.compare(b.getValue(), a.getValue()))
             .forEach(e -> {
-                double pct = totalIncome > 0 ? (e.getValue() / totalIncome) * 100 : 0;
+                double pct = finalTotalIncome > 0 ? (e.getValue() / finalTotalIncome) * 100 : 0;
                 context.append(String.format("  %s: ₹%.0f (%.1f%%)\n",
                     e.getKey(), e.getValue(), pct));
             });
