@@ -8,16 +8,13 @@ import java.util.Properties;
 public class DemoApplication {
 
 	public static void main(String[] args) {
-		SpringApplication app = new SpringApplication(DemoApplication.class);
-		
-		// Set default properties to ensure stability and feature-completeness on constrained environments (like HF)
-		Properties props = new Properties();
-		props.put("spring.datasource.hikari.maximum-pool-size", "3");
-		props.put("spring.datasource.hikari.minimum-idle", "1");
-		props.put("google.client.id", "800791620013-uj3mtbfo91cb6isaru29mgr6k2rbr3lo.apps.googleusercontent.com");
-		app.setDefaultProperties(props);
-		
-		app.run(args);
+		// Set properties for constrained environments (like HF) with highest priority
+		System.setProperty("spring.datasource.hikari.maximum-pool-size", "3");
+		System.setProperty("spring.datasource.hikari.minimum-idle", "1");
+		System.setProperty("spring.datasource.hikari.idle-timeout", "30000");
+		System.setProperty("google.client.id", "800791620013-uj3mtbfo91cb6isaru29mgr6k2rbr3lo.apps.googleusercontent.com");
+
+		SpringApplication.run(DemoApplication.class, args);
 	}
 
 }
