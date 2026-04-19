@@ -18,7 +18,7 @@ export default function Forecast() {
     setLoading(true);
     setError(null);
     fetch(`${API}/api/forecast?months=${months}`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}`, "X-User-Id": token },
     })
       .then((r) => r.json())
       .then((d) => { setData(d); setLoading(false); })

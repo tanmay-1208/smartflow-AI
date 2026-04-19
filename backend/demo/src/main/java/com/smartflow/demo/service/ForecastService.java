@@ -17,8 +17,10 @@ public class ForecastService {
 
     private final TransactionRepository transactionRepository;
 
-    public ForecastResult forecast(int months) {
-        List<Transaction> all = transactionRepository.findAll();
+    public ForecastResult forecast(int months, Long userId) {
+        List<Transaction> all = userId != null
+            ? transactionRepository.findByUserId(userId)
+            : transactionRepository.findAll();
 
         Map<String, Double> incomeByMonth = new TreeMap<>();
         Map<String, Double> expenseByMonth = new TreeMap<>();

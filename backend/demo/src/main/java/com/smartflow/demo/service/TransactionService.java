@@ -16,6 +16,10 @@ public class TransactionService {
         return transactionRepository.findAllByOrderByDateDesc();
     }
 
+    public List<Transaction> getTransactionsByUser(Long userId) {
+        return transactionRepository.findByUserIdOrderByDateDesc(userId);
+    }
+
     public Transaction addTransaction(Transaction transaction) {
         return transactionRepository.save(transaction);
     }

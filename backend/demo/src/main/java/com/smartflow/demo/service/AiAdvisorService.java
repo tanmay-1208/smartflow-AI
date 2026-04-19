@@ -29,8 +29,10 @@ public class AiAdvisorService {
         this.transactionRepository = transactionRepository;
     }
 
-    public String getFinancialAdvice(String userMessage) {
-        List<Transaction> allTransactions = transactionRepository.findAllByOrderByDateDesc();
+    public String getFinancialAdvice(String userMessage, Long userId) {
+        List<Transaction> allTransactions = userId != null
+            ? transactionRepository.findByUserIdOrderByDateDesc(userId)
+            : transactionRepository.findAllByOrderByDateDesc();
 
         double totalIncome = 0.0;
         double totalExpense = 0.0;

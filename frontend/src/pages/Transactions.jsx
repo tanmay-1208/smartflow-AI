@@ -36,7 +36,8 @@ export default function Transactions() {
       const res = await fetch(`${BASE}/api/transactions`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
+          "X-User-Id": token
         }
       });
       if (!res.ok) throw new Error("Failed to fetch");
@@ -137,12 +138,14 @@ export default function Transactions() {
 
     setIsSubmitting(true);
     try {
+      const token = localStorage.getItem("sf_token") || localStorage.getItem("token");
       const payload = {
         type: form.type,
         category: form.category,
         description: form.description.trim(),
         amount: form.type === "INCOME" ? Math.abs(Number(form.amount)) : -Math.abs(Number(form.amount)),
         date: form.date,
+        userId: token ? Number(token) : null,
       };
 
       await addTransaction(payload);

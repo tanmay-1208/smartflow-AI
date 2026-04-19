@@ -19,14 +19,16 @@ public class AiAdvisorController {
     }
 
     @PostMapping("/advice")
-    public Map<String, String> getAdvice(@RequestBody Map<String, String> request) {
+    public Map<String, String> getAdvice(
+            @RequestBody Map<String, String> request,
+            @RequestHeader(value = "X-User-Id", required = false) Long userId) {
         String message = request.get("message");
         
         if (message == null || message.trim().isEmpty()) {
             return Map.of("advice", "Please provide a valid question.");
         }
         
-        String advice = aiAdvisorService.getFinancialAdvice(message);
+        String advice = aiAdvisorService.getFinancialAdvice(message, userId);
         return Map.of("advice", advice);
     }
 }

@@ -4,7 +4,8 @@ const headers = () => {
   const token = localStorage.getItem("sf_token") || localStorage.getItem("token");
   return {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`
+    Authorization: `Bearer ${token}`,
+    "X-User-Id": token,
   };
 };
 

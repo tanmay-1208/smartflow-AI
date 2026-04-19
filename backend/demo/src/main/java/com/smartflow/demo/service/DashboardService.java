@@ -14,8 +14,10 @@ public class DashboardService {
     @Autowired
     private TransactionRepository transactionRepository;
 
-    public Map<String, Object> getSummary() {
-        List<Transaction> all = transactionRepository.findAll();
+    public Map<String, Object> getSummary(Long userId) {
+        List<Transaction> all = userId != null
+            ? transactionRepository.findByUserId(userId)
+            : transactionRepository.findAll();
 
         double totalIncome = all.stream()
             .filter(t -> "INCOME".equalsIgnoreCase(t.getType()))
@@ -38,8 +40,11 @@ public class DashboardService {
         );
     }
 
-    public List<Map<String, Object>> getCashflowChart() {
-        List<Transaction> all = transactionRepository.findAll();
+    public List<Map<String, Object>> getCashflowChart(Long userId) {
+        List<Transaction> all = userId != null
+            ? transactionRepository.findByUserId(userId)
+            : transactionRepository.findAll();
+
         Map<String, double[]> monthlyData = new LinkedHashMap<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM yyyy");
 

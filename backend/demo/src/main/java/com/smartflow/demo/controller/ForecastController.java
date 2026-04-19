@@ -9,13 +9,15 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/forecast")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class ForecastController {
 
     private final ForecastService forecastService;
 
     @GetMapping
     public ResponseEntity<ForecastResult> getForecast(
-            @RequestParam(defaultValue = "3") int months) {
-        return ResponseEntity.ok(forecastService.forecast(months));
+            @RequestParam(defaultValue = "3") int months,
+            @RequestHeader(value = "X-User-Id", required = false) Long userId) {
+        return ResponseEntity.ok(forecastService.forecast(months, userId));
     }
 }

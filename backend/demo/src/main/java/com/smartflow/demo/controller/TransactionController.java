@@ -16,7 +16,10 @@ public class TransactionController {
     private final TransactionService transactionService;
 
     @GetMapping
-    public List<Transaction> getAll() {
+    public List<Transaction> getAll(@RequestHeader(value = "X-User-Id", required = false) Long userId) {
+        if (userId != null) {
+            return transactionService.getTransactionsByUser(userId);
+        }
         return transactionService.getAllTransactions();
     }
 

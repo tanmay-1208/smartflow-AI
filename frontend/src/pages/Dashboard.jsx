@@ -49,7 +49,7 @@ export default function Dashboard() {
   const [selectedYear, setSelectedYear] = useState("");
 
   useEffect(() => {
-    const headers = { Authorization: `Bearer ${token}` };
+    const headers = { Authorization: `Bearer ${token}`, "X-User-Id": token };
     Promise.all([
       fetch(`${API}/api/dashboard/summary`, { headers }).then((r) => r.json()),
       fetch(`${API}/api/dashboard/cashflow-chart`, { headers }).then((r) => r.json()),

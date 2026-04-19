@@ -37,7 +37,8 @@ export default function AiAdvisor() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
+          "X-User-Id": token
         },
         body: JSON.stringify({ message: text, token })
       });
