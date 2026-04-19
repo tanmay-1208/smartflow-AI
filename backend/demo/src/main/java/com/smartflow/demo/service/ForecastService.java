@@ -17,6 +17,10 @@ public class ForecastService {
 
     private final TransactionRepository transactionRepository;
 
+    // Smoothing parameters for Holt's method
+    private static final double ALPHA = 0.3;  // level smoothing
+    private static final double BETA  = 0.1;  // trend smoothing
+
     public ForecastResult forecast(int months, Long userId) {
         List<Transaction> all = userId != null
             ? transactionRepository.findByUserId(userId)
@@ -37,12 +41,24 @@ public class ForecastService {
             }
         }
 
-        Set<String> allMonths = new TreeSet<>();
-        allMonths.addAll(incomeByMonth.keySet());
-        allMonths.addAll(expenseByMonth.keySet());
+        Set<String> allMonthKeys = new TreeSet<>();
+        allMonthKeys.addAll(incomeByMonth.keySet());
+        allMonthKeys.addAll(expenseByMonth.keySet());
 
-        List<String> sortedMonths = new ArrayList<>(allMonths);
+        List<String> sortedMonths = new ArrayList<>(allMonthKeys);
         int n = sortedMonths.size();
+
+        if (n == 0) {
+            // No data — return empty forecast
+            List<MonthForecast> empty = new ArrayList<>();
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MMM yyyy");
+            LocalDate now = LocalDate.now();
+            for (int i = 0; i < months; i++) {
+                String label = now.plusMonths(i + 1).format(fmt);
+                empty.add(new MonthForecast(label, 0.0, 0.0, 0.0, 0.0, 0.0));
+            }
+            return new ForecastResult(empty, 0.0, 0.0, 0.0, "STABLE", 0.0, "No Data");
+        }
 
         double[] incomes = new double[n];
         double[] expenses = new double[n];
@@ -52,62 +68,119 @@ public class ForecastService {
             expenses[i] = Math.abs(expenseByMonth.getOrDefault(sortedMonths.get(i), 0.0));
         }
 
-        // Regression 1: Income
-        double[] incomeReg = linearRegression(incomes);
-        double incomeSlope = incomeReg[0];
-        double incomeIntercept = incomeReg[1];
+        // ---------- Double Exponential Smoothing (Holt's Method) ----------
+        double[] incomeForecast = holtForecast(incomes, months);
+        double[] expenseForecast = holtForecast(expenses, months);
 
-        // Regression 2: Expense (positive absolute values)
-        double[] expenseReg = linearRegression(expenses);
-        double expenseSlope = expenseReg[0];
-        double expenseIntercept = expenseReg[1];
+        // ---------- Compute standard deviation for confidence bands ----------
+        double incomeStdDev = stdDev(incomes);
+        double expenseStdDev = stdDev(expenses);
+        double netStdDev = Math.sqrt(incomeStdDev * incomeStdDev + expenseStdDev * expenseStdDev);
 
+        // ---------- Compute averages ----------
         double avgIncome = Arrays.stream(incomes).average().orElse(0);
         double avgExpense = Arrays.stream(expenses).average().orElse(0);
-        double avgNet = avgIncome - avgExpense; 
+        double avgNet = avgIncome - avgExpense;
 
-        double netSlope = incomeSlope - expenseSlope;
-        String trend = netSlope > 50 ? "IMPROVING" : netSlope < -50 ? "DECLINING" : "STABLE";
+        // ---------- Trend detection using slope of Holt's method ----------
+        double lastIncome = n >= 2 ? incomeForecast[months - 1] - incomeForecast[0] : 0;
+        double lastExpense = n >= 2 ? expenseForecast[months - 1] - expenseForecast[0] : 0;
+        double netTrendDelta = lastIncome - lastExpense;
+        String trend;
+        if (netTrendDelta > avgNet * 0.05) {
+            trend = "IMPROVING";
+        } else if (netTrendDelta < -avgNet * 0.05) {
+            trend = "DECLINING";
+        } else {
+            trend = "STABLE";
+        }
 
+        // ---------- Confidence score based on coefficient of variation ----------
+        double cv = avgNet != 0 ? (netStdDev / Math.abs(avgNet)) : 1.0;
+        double confidenceScore = round(Math.max(0, Math.min(100, (1 - cv) * 100)));
+
+        // ---------- Build forecast results ----------
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MMM yyyy");
         LocalDate now = LocalDate.now();
 
         List<MonthForecast> forecasts = new ArrayList<>();
         for (int i = 0; i < months; i++) {
-            int futureX = n + i; 
             LocalDate futureMonth = now.plusMonths(i + 1);
             String label = futureMonth.format(fmt);
-            
-            double projectedIncome = Math.max(0, incomeIntercept + incomeSlope * futureX);
-            double projectedExpense = Math.max(0, expenseIntercept + expenseSlope * futureX);
-            
-            double projectedNet = projectedIncome - projectedExpense;
-            
-            forecasts.add(new MonthForecast(label, round(projectedIncome),
-                round(projectedExpense), round(projectedNet)));
+
+            double projIncome = Math.max(0, incomeForecast[i]);
+            double projExpense = Math.max(0, expenseForecast[i]);
+            double projNet = projIncome - projExpense;
+
+            // Confidence bands widen further into the future
+            double spread = netStdDev * (1 + 0.3 * i);
+            double upper = projNet + spread;
+            double lower = projNet - spread;
+
+            forecasts.add(new MonthForecast(
+                label,
+                round(projIncome),
+                round(projExpense),
+                round(projNet),
+                round(upper),
+                round(lower)
+            ));
         }
 
-        return new ForecastResult(forecasts, round(avgIncome),
-             round(avgExpense), round(avgNet), trend);
+        return new ForecastResult(
+            forecasts,
+            round(avgIncome),
+            round(avgExpense),
+            round(avgNet),
+            trend,
+            confidenceScore,
+            "Holt's Double Exponential Smoothing"
+        );
     }
 
-    private double[] linearRegression(double[] y) {
-        int n = y.length;
-        if (n == 0) return new double[]{0, 0};
-        if (n == 1) return new double[]{0, y[0]};
-
-        double sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-        for (int i = 0; i < n; i++) {
-            sumX += i;
-            sumY += y[i];
-            sumXY += i * y[i];
-            sumX2 += i * i;
+    /**
+     * Holt's Double Exponential Smoothing.
+     * Captures both level and trend from historical data.
+     */
+    private double[] holtForecast(double[] data, int horizonMonths) {
+        int n = data.length;
+        if (n == 0) return new double[horizonMonths];
+        if (n == 1) {
+            double[] result = new double[horizonMonths];
+            Arrays.fill(result, data[0]);
+            return result;
         }
-        double denom = n * sumX2 - sumX * sumX;
-        double slope = denom == 0 ? 0 : (n * sumXY - sumX * sumY) / denom;
-        double intercept = (sumY - slope * sumX) / n;
-        
-        return new double[]{slope, intercept};
+
+        // Initialize
+        double level = data[0];
+        double trendVal = data[1] - data[0];
+
+        // Iterate through historical data to train
+        for (int i = 1; i < n; i++) {
+            double newLevel = ALPHA * data[i] + (1 - ALPHA) * (level + trendVal);
+            double newTrend = BETA * (newLevel - level) + (1 - BETA) * trendVal;
+            level = newLevel;
+            trendVal = newTrend;
+        }
+
+        // Project forward
+        double[] forecast = new double[horizonMonths];
+        for (int i = 0; i < horizonMonths; i++) {
+            forecast[i] = level + trendVal * (i + 1);
+        }
+
+        return forecast;
+    }
+
+    private double stdDev(double[] data) {
+        int n = data.length;
+        if (n < 2) return 0;
+        double mean = Arrays.stream(data).average().orElse(0);
+        double variance = 0;
+        for (double d : data) {
+            variance += (d - mean) * (d - mean);
+        }
+        return Math.sqrt(variance / (n - 1));
     }
 
     private double round(double val) {

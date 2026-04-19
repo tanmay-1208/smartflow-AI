@@ -11,6 +11,8 @@ public class ForecastResult {
     private Double averageMonthlyExpense;
     private Double averageNetCashFlow;
     private String trend;
+    private Double confidenceScore;       // 0-100% model confidence
+    private String modelType;             // algorithm used
 
     @Data
     @AllArgsConstructor
@@ -19,5 +21,7 @@ public class ForecastResult {
         private Double predictedIncome;
         private Double predictedExpense;
         private Double predictedNetCashFlow;
+        private Double upperBoundNet;     // optimistic scenario
+        private Double lowerBoundNet;     // pessimistic scenario
     }
 }
