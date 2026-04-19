@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { loginUser, registerUser } from "../api/auth";
-
+import { loginUser, registerUser, googleLogin } from "../api/auth";
+import { GoogleLogin } from '@react-oauth/google';
 export default function Login() {
   const [mode, setMode] = useState("login"); // "login" | "register"
   const [form, setForm] = useState({ email: "", password: "", businessName: "" });
@@ -30,6 +30,24 @@ export default function Login() {
       }
     } catch {
       setError("Could not connect to server. Is the backend running?");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError("");
+    setLoading(true);
+    try {
+      const res = await googleLogin(credentialResponse.credential);
+      if (res.id) {
+        login(String(res.id), res);
+        navigate("/dashboard");
+      } else {
+        setError(res.error || res.message || "Google Sign-In failed on server");
+      }
+    } catch {
+      setError("Could not connect to server during Google Sign-In.");
     } finally {
       setLoading(false);
     }
@@ -135,6 +153,26 @@ export default function Login() {
           >
             {loading ? "Please wait…" : mode === "login" ? "Sign in to SmartFlow" : "Create account"}
           </button>
+
+          <div className="mt-4 flex items-center justify-center relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/10"></div>
+            </div>
+            <div className="relative px-4 text-xs text-slate-500 bg-navy-800">
+              Or continue with
+            </div>
+          </div>
+
+          <div className="mt-4 flex justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => setError("Google Sign-In failed.")}
+              useOneTap
+              theme="filled_black"
+              shape="rectangular"
+              text="continue_with"
+            />
+          </div>
         </div>
 
         <p className="text-center text-xs text-slate-600">Secured with JWT · Data stays in India</p>

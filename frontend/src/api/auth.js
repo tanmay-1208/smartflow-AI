@@ -20,3 +20,9 @@ export const joinWorkspace = (inviteCode, userId) =>
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ inviteCode, userId: String(userId) }),
   }).then((r) => r.json());
+export const googleLogin = (token) =>
+  fetch(`${BASE}/auth/google`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token }),
+  }).then((r) => r.json());

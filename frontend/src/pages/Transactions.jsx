@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
-import { addTransaction } from "../api/transactions";
+import { getTransactions, addTransaction } from "../api/transactions";
+import { useAuth } from "../context/AuthContext";
 import { useCollab } from "../context/CollabContext";
 import { Plus, X, TrendingUp, TrendingDown, IndianRupee, CalendarDays, Tag, FileText, Loader2 } from "lucide-react";
 
@@ -16,6 +17,7 @@ export default function Transactions() {
   const [isLive, setIsLive] = useState(false);
   const [realtimeStatus, setRealtimeStatus] = useState("Connecting to Realtime...");
   const collab = useCollab();
+  const { token, user } = useAuth();
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -33,13 +35,13 @@ export default function Transactions() {
   const fetchTransactions = async () => {
     try {
       const BASE = import.meta.env.VITE_API_URL || "";
-      const token = localStorage.getItem("sf_token") || localStorage.getItem("token");
+      const currentToken = token || localStorage.getItem("sf_token") || localStorage.getItem("token");
       
       const res = await fetch(`${BASE}/api/transactions`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "X-User-Id": token
+          Authorization: `Bearer ${currentToken}`,
+          "X-Workspace-Id": String(user?.workspaceId || currentToken)
         }
       });
       if (!res.ok) throw new Error("Failed to fetch");
@@ -140,14 +142,14 @@ export default function Transactions() {
 
     setIsSubmitting(true);
     try {
-      const token = localStorage.getItem("sf_token") || localStorage.getItem("token");
+      const currentToken = token || localStorage.getItem("sf_token") || localStorage.getItem("token");
       const payload = {
         type: form.type,
         category: form.category,
         description: form.description.trim(),
         amount: form.type === "INCOME" ? Math.abs(Number(form.amount)) : -Math.abs(Number(form.amount)),
         date: form.date,
-        userId: token ? Number(token) : null,
+        userId: user?.id || (currentToken ? Number(currentToken) : null),
       };
 
       await addTransaction(payload);
