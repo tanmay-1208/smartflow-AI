@@ -13,3 +13,10 @@ export const registerUser = (data) =>
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   }).then((r) => r.json());
+
+export const joinWorkspace = (inviteCode, userId) =>
+  fetch(`${BASE}/auth/join`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ inviteCode, userId: String(userId) }),
+  }).then((r) => r.json());

@@ -9,7 +9,7 @@ import { TrendingUp, TrendingDown, Minus, Brain, ShieldCheck } from "lucide-reac
 const API = import.meta.env.VITE_API_URL;
 
 export default function Forecast() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [data, setData] = useState(null);
   const [months, setMonths] = useState(3);
   const [loading, setLoading] = useState(true);
@@ -19,7 +19,10 @@ export default function Forecast() {
     setLoading(true);
     setError(null);
     fetch(`${API}/api/forecast?months=${months}`, {
-      headers: { Authorization: `Bearer ${token}`, "X-User-Id": token },
+      headers: { 
+        Authorization: `Bearer ${token}`, 
+        "X-Workspace-Id": String(user?.workspaceId || token) 
+      },
     })
       .then((r) => r.json())
       .then((d) => { setData(d); setLoading(false); })

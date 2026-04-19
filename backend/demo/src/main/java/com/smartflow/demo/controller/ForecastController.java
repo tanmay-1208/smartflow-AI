@@ -17,7 +17,7 @@ public class ForecastController {
     @GetMapping
     public ResponseEntity<ForecastResult> getForecast(
             @RequestParam(defaultValue = "3") int months,
-            @RequestHeader(value = "X-User-Id", required = false) Long userId) {
+            @RequestHeader(value = "X-Workspace-Id", required = false) Long userId) {
         return ResponseEntity.ok(forecastService.forecast(months, userId));
     }
 }

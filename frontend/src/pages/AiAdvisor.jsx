@@ -3,15 +3,15 @@ import { useAuth } from "../context/AuthContext";
 import { Send, Bot, User } from "lucide-react";
 
 export default function AiAdvisor() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [messages, setMessages] = useState([
-    { type: "ai", text: "Hi! I'm your AI financial advisor. How can I help you today?" }
+    { type: "ai", text: "Hello! I'm your VaultCA AI Advisor. Ask me anything about your current cash flow, expenses, or forecasts." }
   ]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
-  const suggestedPrompts = [
+  const SUGGESTIONS = [
     "Analyse my cash flow",
     "How can I reduce expenses?",
     "What's my financial trend?"
@@ -38,7 +38,7 @@ export default function AiAdvisor() {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-          "X-User-Id": token
+          "X-Workspace-Id": String(user?.workspaceId || token)
         },
         body: JSON.stringify({ message: text, token })
       });

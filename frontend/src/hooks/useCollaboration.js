@@ -19,7 +19,7 @@ export function useCollaboration() {
     const userName = user?.name || user?.businessName || user?.email || "User";
     const userColor = generateColor(token);
 
-    const ch = supabase.channel("collaboration", {
+    const ch = supabase.channel(`workspace-${user?.workspaceId || token}`, {
       config: { presence: { key: token } },
     });
 

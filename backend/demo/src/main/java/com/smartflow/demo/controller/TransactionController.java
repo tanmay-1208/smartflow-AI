@@ -17,7 +17,7 @@ public class TransactionController {
     private final TransactionService transactionService;
 
     @GetMapping
-    public List<Transaction> getAll(@RequestHeader(value = "X-User-Id", required = false) Long userId) {
+    public List<Transaction> getAll(@RequestHeader(value = "X-Workspace-Id", required = false) Long userId) {
         if (userId != null) {
             return transactionService.getTransactionsByUser(userId);
         }
@@ -37,7 +37,7 @@ public class TransactionController {
 
     // One-time migration: assign unowned transactions to the requesting user
     @PostMapping("/claim")
-    public ResponseEntity<?> claimUnowned(@RequestHeader(value = "X-User-Id") Long userId) {
+    public ResponseEntity<?> claimUnowned(@RequestHeader(value = "X-Workspace-Id") Long userId) {
         int count = transactionService.claimUnownedTransactions(userId);
         return ResponseEntity.ok(Map.of("claimed", count, "message", count + " transactions assigned to your account"));
     }

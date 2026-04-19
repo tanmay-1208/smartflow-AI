@@ -2,10 +2,11 @@ const BASE = import.meta.env.VITE_API_URL || "";
 
 const headers = () => {
   const token = localStorage.getItem("sf_token") || localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("sf_user") || "{}");
   return {
     "Content-Type": "application/json",
     Authorization: `Bearer ${token}`,
-    "X-User-Id": token,
+    "X-Workspace-Id": String(user.workspaceId || token),
   };
 };
 

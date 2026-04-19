@@ -60,5 +60,27 @@ public class DataMigrationRunner implements CommandLineRunner {
         if (shifted > 0) {
             System.out.println("[Migration] Shifted " + shifted + " transactions from 2024 to 2025-2026");
         }
+        
+        // Migration 3: Seed invite codes and workspace IDs for existing users
+        List<User> allUsers = userRepository.findAll();
+        int usersUpdated = 0;
+        for (User u : allUsers) {
+            boolean changed = false;
+            if (u.getInviteCode() == null) {
+                u.setInviteCode(java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+                changed = true;
+            }
+            if (u.getWorkspaceId() == null) {
+                u.setWorkspaceId(u.getId());
+                changed = true;
+            }
+            if (changed) {
+                userRepository.save(u);
+                usersUpdated++;
+            }
+        }
+        if (usersUpdated > 0) {
+            System.out.println("[Migration] Seeded workspace/invite codes for " + usersUpdated + " users");
+        }
     }
 }

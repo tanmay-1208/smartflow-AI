@@ -23,8 +23,11 @@ public class User {
     @Column(name = "business_name")
     private String businessName;
 
-    @Column(name = "team_id")
-    private Long teamId;
+    @Column(name = "invite_code", unique = true)
+    private String inviteCode;
+
+    @Column(name = "workspace_id")
+    private Long workspaceId;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

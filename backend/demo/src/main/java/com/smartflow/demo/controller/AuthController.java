@@ -23,7 +23,10 @@ public class AuthController {
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Email already registered"));
         }
+        user.setInviteCode(java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         User saved = userRepository.save(user);
+        saved.setWorkspaceId(saved.getId());
+        userRepository.save(saved);
         saved.setPassword(null); // don't return password
         return ResponseEntity.ok(saved);
     }
@@ -42,5 +45,32 @@ public class AuthController {
         User user = userOpt.get();
         user.setPassword(null);
         return ResponseEntity.ok(user);
+    }
+    
+    // POST /api/auth/join
+    @PostMapping("/join")
+    public ResponseEntity<?> joinWorkspace(@RequestBody Map<String, String> payload) {
+        String inviteCode = payload.get("inviteCode");
+        String userIdStr = payload.get("userId");
+        if (inviteCode == null || userIdStr == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Missing inviteCode or userId"));
+        }
+        
+        Optional<User> targetWorkspaceOwner = userRepository.findByInviteCode(inviteCode);
+        if (targetWorkspaceOwner.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid invite code"));
+        }
+        
+        Optional<User> currentUserOpt = userRepository.findById(Long.parseLong(userIdStr));
+        if (currentUserOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "User not found"));
+        }
+        
+        User currentUser = currentUserOpt.get();
+        currentUser.setWorkspaceId(targetWorkspaceOwner.get().getWorkspaceId());
+        userRepository.save(currentUser);
+        
+        currentUser.setPassword(null);
+        return ResponseEntity.ok(currentUser);
     }
 }

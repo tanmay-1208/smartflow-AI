@@ -21,7 +21,7 @@ public class AiAdvisorController {
     @PostMapping("/advice")
     public Map<String, String> getAdvice(
             @RequestBody Map<String, String> request,
-            @RequestHeader(value = "X-User-Id", required = false) Long userId) {
+            @RequestHeader(value = "X-Workspace-Id", required = false) Long userId) {
         String message = request.get("message");
         
         if (message == null || message.trim().isEmpty()) {

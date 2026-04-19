@@ -17,13 +17,13 @@ public class DashboardController {
 
     // GET /api/dashboard/summary
     @GetMapping("/summary")
-    public Map<String, Object> getSummary(@RequestHeader(value = "X-User-Id", required = false) Long userId) {
+    public Map<String, Object> getSummary(@RequestHeader(value = "X-Workspace-Id", required = false) Long userId) {
         return dashboardService.getSummary(userId);
     }
 
     // GET /api/dashboard/cashflow-chart
     @GetMapping("/cashflow-chart")
-    public List<Map<String, Object>> getCashflowChart(@RequestHeader(value = "X-User-Id", required = false) Long userId) {
+    public List<Map<String, Object>> getCashflowChart(@RequestHeader(value = "X-Workspace-Id", required = false) Long userId) {
         return dashboardService.getCashflowChart(userId);
     }
 }

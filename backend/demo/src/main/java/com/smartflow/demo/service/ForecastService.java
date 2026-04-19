@@ -12,30 +12,19 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class ForecastService {
 
     private final TransactionRepository transactionRepository;
-    private final TeamService teamService;
-
-    public ForecastService(TransactionRepository transactionRepository, TeamService teamService) {
-        this.transactionRepository = transactionRepository;
-        this.teamService = teamService;
-    }
 
     // Smoothing parameters for Holt's method
     private static final double ALPHA = 0.3;  // level smoothing
     private static final double BETA  = 0.1;  // trend smoothing
 
     public ForecastResult forecast(int months, Long userId) {
-        List<Transaction> all;
-        if (userId != null) {
-            List<Long> ids = teamService.getEffectiveUserIds(userId);
-            all = ids.size() == 1
-                ? transactionRepository.findByUserId(ids.get(0))
-                : transactionRepository.findByUserIdIn(ids);
-        } else {
-            all = transactionRepository.findAll();
-        }
+        List<Transaction> all = userId != null
+            ? transactionRepository.findByUserId(userId)
+            : transactionRepository.findAll();
 
         Map<String, Double> incomeByMonth = new TreeMap<>();
         Map<String, Double> expenseByMonth = new TreeMap<>();

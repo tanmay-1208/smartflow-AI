@@ -41,7 +41,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export default function Dashboard() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [summary, setSummary] = useState(null);
   const [chart, setChart] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -49,7 +49,10 @@ export default function Dashboard() {
   const [selectedYear, setSelectedYear] = useState("");
 
   useEffect(() => {
-    const headers = { Authorization: `Bearer ${token}`, "X-User-Id": token };
+    const headers = { 
+      Authorization: `Bearer ${token}`, 
+      "X-Workspace-Id": String(user?.workspaceId || token) 
+    };
     Promise.all([
       fetch(`${API}/api/dashboard/summary`, { headers }).then((r) => r.json()),
       fetch(`${API}/api/dashboard/cashflow-chart`, { headers }).then((r) => r.json()),
