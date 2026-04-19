@@ -57,11 +57,11 @@ export default function AiAdvisor() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-3.5rem)] md:h-screen bg-gray-950 text-white">
+    <div className="flex flex-col h-[calc(100vh-8rem)] md:h-[calc(100vh-6rem)] bg-gray-900/40 rounded-3xl border border-gray-800 backdrop-blur-sm overflow-hidden text-white">
       {/* Header */}
-      <div className="p-6 border-b border-gray-800 flex items-center gap-3">
+      <div className="p-4 sm:p-6 border-b border-gray-800 flex items-center gap-3 bg-gray-900/60">
         <Bot className="text-blue-400" size={24} />
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">AI Financial Advisor</h1>
+        <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">AI Financial Advisor</h1>
       </div>
 
       {/* Chat Area */}

@@ -172,48 +172,42 @@ export default function Transactions() {
     <div className="p-6 text-white min-h-screen">
       <div className="max-w-6xl mx-auto space-y-6">
         
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center justify-between">
           <div className="flex flex-col gap-1">
-            <h1 className="text-3xl font-extrabold tracking-tight">Transactions</h1>
-            <div className="flex items-center gap-2 text-sm text-gray-400">
-              <div className="relative flex h-2.5 w-2.5">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Transactions</h1>
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-400">
+              <div className="relative flex h-2 w-2">
                 <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 ${isLive ? 'animate-ping bg-green-400' : 'bg-gray-500'}`}></span>
-                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isLive ? 'bg-green-500' : 'bg-gray-500'}`}></span>
+                <span className={`relative inline-flex rounded-full h-2 w-2 ${isLive ? 'bg-green-500' : 'bg-gray-500'}`}></span>
               </div>
               {realtimeStatus}
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
-            {/* Add Transaction Button */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <button
               id="add-transaction-btn"
               onClick={openModal}
-              className="group flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all duration-300 hover:scale-[1.03] active:scale-95"
+              className="flex-1 sm:flex-none group flex items-center justify-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-blue-500/20 transition-all duration-300 active:scale-95"
             >
-              <Plus size={18} className="transition-transform duration-300 group-hover:rotate-90" />
-              Add Transaction
+              <Plus size={18} />
+              Add Entry
             </button>
 
-            <div className="flex gap-2">
-              <button 
-                onClick={() => setFilter("ALL")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === "ALL" ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"}`}
-              >
-                All
-              </button>
-              <button 
-                onClick={() => setFilter("INCOME")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === "INCOME" ? "bg-green-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"}`}
-              >
-                Income
-              </button>
-              <button 
-                onClick={() => setFilter("EXPENSE")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === "EXPENSE" ? "bg-red-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"}`}
-              >
-                Expense
-              </button>
+            <div className="flex gap-1 bg-gray-900/50 p-1 rounded-xl border border-gray-800">
+              {["ALL", "INCOME", "EXPENSE"].map((f) => (
+                <button 
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all ${
+                    filter === f 
+                      ? f === "INCOME" ? "bg-green-600 text-white" : f === "EXPENSE" ? "bg-red-600 text-white" : "bg-blue-600 text-white"
+                      : "text-gray-500 hover:text-gray-300"
+                  }`}
+                >
+                  {f === "ALL" ? "All" : f}
+                </button>
+              ))}
             </div>
           </div>
         </div>
@@ -229,7 +223,8 @@ export default function Transactions() {
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-left border-collapse focus:outline-none">
               <thead>
                 <tr className="bg-gray-950 border-b border-gray-800 text-gray-400 text-xs uppercase tracking-wider">
@@ -243,22 +238,17 @@ export default function Transactions() {
               <tbody className="divide-y divide-gray-800">
                 {filteredData.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="p-8 text-center text-gray-500 text-sm">
-                      No transactions found.
-                    </td>
+                    <td colSpan="5" className="p-8 text-center text-gray-500 text-sm">No transactions found.</td>
                   </tr>
                 ) : (
                   filteredData.map((t) => {
                     const num = Number(t.amount);
-                    const sign = num >= 0 ? "+" : "-";
                     return (
                       <tr key={t.id} className="hover:bg-gray-800/60 transition-colors">
                         <td className="p-4 text-sm text-gray-300">{t.date}</td>
                         <td className="p-4 text-sm font-medium text-gray-100">{t.description}</td>
                         <td className="p-4 text-sm text-gray-400">
-                          <span className="px-2.5 py-1 bg-gray-800 rounded-lg text-xs font-medium border border-gray-700">
-                            {t.category}
-                          </span>
+                          <span className="px-2.5 py-1 bg-gray-800 rounded-lg text-xs font-medium border border-gray-700">{t.category}</span>
                         </td>
                         <td className="p-4 text-sm">
                           <span className={`text-xs font-bold tracking-wide px-2 py-1 rounded-md bg-opacity-10 
@@ -266,9 +256,8 @@ export default function Transactions() {
                             {t.type}
                           </span>
                         </td>
-                        <td className={`p-4 text-sm font-bold text-right tracking-wide
-                          ${num >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {sign} ₹{Math.abs(num).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        <td className={`p-4 text-sm font-bold text-right tracking-wide ${num >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {num >= 0 ? "+" : "-"} ₹{Math.abs(num).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </td>
                       </tr>
                     );
@@ -276,6 +265,39 @@ export default function Transactions() {
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="sm:hidden divide-y divide-gray-800">
+            {filteredData.length === 0 ? (
+              <div className="p-8 text-center text-gray-500 text-sm">No transactions found.</div>
+            ) : (
+              filteredData.map((t) => {
+                const num = Number(t.amount);
+                return (
+                  <div key={t.id} className="p-4 space-y-3">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-sm font-medium text-gray-100">{t.description}</p>
+                        <p className="text-xs text-gray-500">{t.date}</p>
+                      </div>
+                      <p className={`text-sm font-bold tracking-wide ${num >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {num >= 0 ? "+" : "-"} ₹{Math.abs(num).toLocaleString('en-IN')}
+                      </p>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="px-2 py-0.5 bg-gray-800 rounded-md text-[10px] font-medium border border-gray-700 text-gray-400 uppercase tracking-wider">
+                        {t.category}
+                      </span>
+                      <span className={`text-[10px] font-bold tracking-widest px-2 py-0.5 rounded-md bg-opacity-10 uppercase
+                        ${num >= 0 ? 'text-green-400 bg-green-900/40' : 'text-red-400 bg-red-900/40'}`}>
+                        {t.type}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
       </div>

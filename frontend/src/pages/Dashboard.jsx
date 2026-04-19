@@ -128,7 +128,7 @@ export default function Dashboard() {
         <p className="text-gray-500 text-sm mt-1">Your business cash flow at a glance</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard
           label="Total Income"
           value={summary.totalIncome}
@@ -181,26 +181,27 @@ export default function Dashboard() {
             No chart data for {selectedYear}
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={filteredChart} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+          <ResponsiveContainer width="100%" height={320}>
+            <BarChart data={filteredChart} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
               <XAxis
                 dataKey="month"
-                tick={{ fill: "#6b7280", fontSize: 11 }}
+                tick={{ fill: "#6b7280", fontSize: 10 }}
                 axisLine={false}
                 tickLine={false}
+                interval="preserveStartEnd"
               />
               <YAxis
                 tickFormatter={formatCurrency}
-                tick={{ fill: "#6b7280", fontSize: 11 }}
+                tick={{ fill: "#6b7280", fontSize: 10 }}
                 axisLine={false}
                 tickLine={false}
-                width={50}
+                width={60}
               />
               <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ fontSize: "12px", color: "#9ca3af", paddingTop: "12px" }} />
-              <Bar dataKey="income" name="Income" fill="#10b981" radius={[4, 4, 0, 0]} barSize={18} />
-              <Bar dataKey="expense" name="Expense" fill="#f43f5e" radius={[4, 4, 0, 0]} barSize={18} />
+              <Legend wrapperStyle={{ fontSize: "11px", color: "#9ca3af", paddingTop: "20px" }} />
+              <Bar dataKey="income" name="Income" fill="#10b981" radius={[4, 4, 0, 0]} barSize={window.innerWidth < 640 ? 12 : 18} />
+              <Bar dataKey="expense" name="Expense" fill="#f43f5e" radius={[4, 4, 0, 0]} barSize={window.innerWidth < 640 ? 12 : 18} />
             </BarChart>
           </ResponsiveContainer>
         )}

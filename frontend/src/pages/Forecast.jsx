@@ -127,38 +127,38 @@ export default function Forecast() {
         {data && !loading && (
           <>
             {/* Summary cards */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-              <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
-                <p className="text-gray-400 text-sm">Avg Monthly Income</p>
-                <p className="text-green-400 text-xl font-bold mt-1">
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-8">
+              <div className="bg-gray-900 rounded-xl p-3 sm:p-4 border border-gray-800">
+                <p className="text-gray-400 text-[10px] sm:text-xs uppercase tracking-wider">Avg Income</p>
+                <p className="text-green-400 text-base sm:text-xl font-bold mt-1">
                   ₹{data.averageMonthlyIncome?.toLocaleString("en-IN")}
                 </p>
               </div>
-              <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
-                <p className="text-gray-400 text-sm">Avg Monthly Expense</p>
-                <p className="text-red-400 text-xl font-bold mt-1">
+              <div className="bg-gray-900 rounded-xl p-3 sm:p-4 border border-gray-800">
+                <p className="text-gray-400 text-[10px] sm:text-xs uppercase tracking-wider">Avg Expense</p>
+                <p className="text-red-400 text-base sm:text-xl font-bold mt-1">
                   ₹{Math.abs(data.averageMonthlyExpense)?.toLocaleString("en-IN")}
                 </p>
               </div>
-              <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
-                <p className="text-gray-400 text-sm">Avg Net Cash Flow</p>
-                <p className="text-blue-400 text-xl font-bold mt-1">
+              <div className="bg-gray-900 rounded-xl p-3 sm:p-4 border border-gray-800">
+                <p className="text-gray-400 text-[10px] sm:text-xs uppercase tracking-wider">Avg Net Flow</p>
+                <p className="text-blue-400 text-base sm:text-xl font-bold mt-1">
                   ₹{data.averageNetCashFlow?.toLocaleString("en-IN")}
                 </p>
               </div>
-              <div className={`bg-gray-900 rounded-xl p-4 border ${trendBg}`}>
-                <p className="text-gray-400 text-sm">Trend</p>
-                <div className={`flex items-center gap-1.5 mt-1 ${trendColor}`}>
-                  <TrendIcon size={20} />
-                  <span className="text-xl font-bold">{data.trend}</span>
+              <div className={`bg-gray-900 rounded-xl p-3 sm:p-4 border ${trendBg}`}>
+                <p className="text-gray-400 text-[10px] sm:text-xs uppercase tracking-wider">Trend</p>
+                <div className={`flex items-center gap-1 mt-1 ${trendColor}`}>
+                  <TrendIcon size={16} />
+                  <span className="text-base sm:text-xl font-bold">{data.trend}</span>
                 </div>
               </div>
-              <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
-                <div className="flex items-center gap-1.5 text-gray-400 text-sm">
-                  <ShieldCheck size={14} />
+              <div className="bg-gray-900 rounded-xl p-3 sm:p-4 border border-gray-800 col-span-2 lg:col-span-1">
+                <div className="flex items-center gap-1.5 text-gray-400 text-[10px] sm:text-xs uppercase tracking-wider">
+                  <ShieldCheck size={12} />
                   <span>Confidence</span>
                 </div>
-                <p className={`text-xl font-bold mt-1 ${confidenceColor(data.confidenceScore || 0)}`}>
+                <p className={`text-base sm:text-xl font-bold mt-1 ${confidenceColor(data.confidenceScore || 0)}`}>
                   {data.confidenceScore?.toFixed(0) || 0}%
                 </p>
               </div>
@@ -174,16 +174,15 @@ export default function Forecast() {
                   {data.modelType || "Exponential Smoothing"}
                 </span>
               </div>
-              <ResponsiveContainer width="100%" height={360}>
-                <ComposedChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
-                  <XAxis dataKey="month" tick={{ fill: "#9ca3af", fontSize: 12 }} />
-                  <YAxis tick={{ fill: "#9ca3af", fontSize: 12 }}
+              <ResponsiveContainer width="100%" height={320}>
+                <ComposedChart data={chartData} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
+                  <XAxis dataKey="month" tick={{ fill: "#6b7280", fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: "#6b7280", fontSize: 10 }} axisLine={false} tickLine={false}
                     tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} />
                   <Tooltip content={<CustomTooltip />} />
-                  <Legend wrapperStyle={{ color: "#9ca3af" }} />
+                  <Legend wrapperStyle={{ color: "#9ca3af", fontSize: "11px", paddingTop: "15px" }} />
 
-                  {/* Confidence band as area */}
                   <Area
                     dataKey="confidenceRange"
                     fill="#3b82f6"
@@ -193,9 +192,9 @@ export default function Forecast() {
                     legendType="none"
                   />
 
-                  <Bar dataKey="Income" fill="#22c55e" radius={[4, 4, 0, 0]} barSize={20} />
-                  <Bar dataKey="Expense" fill="#ef4444" radius={[4, 4, 0, 0]} barSize={20} />
-                  <Bar dataKey="Net Cash Flow" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={20} />
+                  <Bar dataKey="Income" fill="#22c55e" radius={[3, 3, 0, 0]} barSize={window.innerWidth < 640 ? 12 : 18} />
+                  <Bar dataKey="Expense" fill="#ef4444" radius={[3, 3, 0, 0]} barSize={window.innerWidth < 640 ? 12 : 18} />
+                  <Bar dataKey="Net Cash Flow" fill="#3b82f6" radius={[3, 3, 0, 0]} barSize={window.innerWidth < 640 ? 12 : 18} />
                 </ComposedChart>
               </ResponsiveContainer>
             </div>

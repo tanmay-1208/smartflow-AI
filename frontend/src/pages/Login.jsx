@@ -77,7 +77,7 @@ export default function Login() {
         </div>
 
         {/* Card */}
-        <div className="bg-navy-800 border border-white/[0.07] rounded-2xl p-7 mb-4">
+        <div className="bg-navy-800 border border-white/[0.07] rounded-2xl p-5 sm:p-7 mb-4">
           {/* Tab toggle */}
           <div className="flex bg-navy-900 rounded-lg p-1 mb-6">
             {["login", "register"].map((m) => (

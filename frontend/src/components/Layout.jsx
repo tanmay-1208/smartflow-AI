@@ -103,16 +103,28 @@ export default function Layout({ children }) {
       </header>
 
       {/* ── Mobile drawer ───────────────────────────────────── */}
-      {open && (
+      <div
+        className={`md:hidden fixed inset-0 z-40 transition-opacity duration-300 ${
+          open ? "bg-black/60 opacity-100" : "bg-black/0 opacity-0 pointer-events-none"
+        }`}
+        onClick={() => setOpen(false)}
+      >
         <div
-          className="md:hidden fixed inset-0 z-20 bg-black/60"
-          onClick={() => setOpen(false)}
+          className={`absolute top-0 left-0 bottom-0 w-64 bg-gray-900 border-r border-gray-800 transition-transform duration-300 ease-out ${
+            open ? "translate-x-0" : "-translate-x-full"
+          }`}
+          onClick={(e) => e.stopPropagation()}
         >
-          <div
-            className="absolute top-14 left-0 right-0 bg-gray-900 border-b border-gray-800 px-4 py-4 space-y-1"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="flex items-center gap-2 px-5 py-5 border-b border-gray-800">
+            <Zap size={20} className="text-blue-400" />
+            <span className="text-base font-bold tracking-tight">
+              SmartFlow <span className="text-blue-400">AI</span>
+            </span>
+          </div>
+          <nav className="px-3 py-5 space-y-1">
             <NavLinks onClick={() => setOpen(false)} />
+          </nav>
+          <div className="absolute bottom-5 inset-x-3">
             <button
               onClick={handleLogout}
               className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-gray-800 transition-colors"
@@ -122,10 +134,10 @@ export default function Layout({ children }) {
             </button>
           </div>
         </div>
-      )}
+      </div>
 
       {/* ── Page content ────────────────────────────────────── */}
-      <main className="flex-1 md:ml-56 pt-14 md:pt-0 min-h-screen">
+      <main className="flex-1 md:ml-56 pt-16 md:pt-8 min-h-screen px-4 md:px-8 pb-10">
         {children}
       </main>
     </div>

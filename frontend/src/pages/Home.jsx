@@ -103,31 +103,31 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 px-6 mesh-bg">
+      <section className="relative pt-24 pb-16 md:pt-48 md:pb-32 px-4 md:px-6 mesh-bg overflow-hidden">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-8 z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-sm font-medium border border-blue-500/20">
-              <Sparkles size={16} /> Now with AI Advisor
+          <div className="space-y-6 md:space-y-8 z-10 text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs md:text-sm font-medium border border-blue-500/20">
+              <Sparkles size={14} /> Now with AI Advisor
             </div>
-            <h1 className="font-jakarta text-5xl md:text-7xl font-extrabold leading-[1.1] tracking-tight">
-              Smart Cash Flow for <br />
+            <h1 className="font-jakarta text-4xl sm:text-5xl md:text-7xl font-extrabold leading-[1.2] md:leading-[1.1] tracking-tight">
+              Smart Cash Flow for <br className="hidden sm:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-500">Indian Businesses</span>
             </h1>
-            <p className="text-lg md:text-xl text-gray-400 max-w-xl leading-relaxed">
+            <p className="text-base md:text-xl text-gray-400 max-w-xl mx-auto lg:mx-0 leading-relaxed">
               AI-powered forecasting, real-time tracking, and intelligent insights to keep your finances growing safely.
             </p>
-            <div className="flex flex-wrap gap-4 pt-4">
-              <Link to="/register" className="flex items-center gap-2 px-8 py-4 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition-all hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]">
+            <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4 pt-4">
+              <Link to="/register" className="flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition-all hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]">
                 Get Started Free <ChevronRight size={18} />
               </Link>
-              <Link to="/dashboard" className="flex items-center gap-2 px-8 py-4 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 font-semibold transition-all">
+              <Link to="/dashboard" className="flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 font-semibold transition-all">
                 View Demo
               </Link>
             </div>
           </div>
           
-          {/* Floating Visuals (Hidden on mobile) */}
-          <div className="relative lg:h-[500px] items-center justify-center hidden md:flex">
+          {/* Floating Visuals (Improved for desktop, hidden on very small mobile) */}
+          <div className="relative lg:h-[500px] items-center justify-center hidden lg:flex">
             <div className="absolute w-64 p-6 rounded-2xl bg-gray-900 border border-gray-800 shadow-2xl float-slow top-10 right-10 z-20">
               <div className="flex items-center gap-3 mb-4">
                 <TrendingUp className="text-emerald-400" />
