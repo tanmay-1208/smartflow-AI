@@ -68,6 +68,10 @@ public class ForecastService {
             expenses[i] = Math.abs(expenseByMonth.getOrDefault(sortedMonths.get(i), 0.0));
         }
 
+        // ---------- Outlier dampening (IQR capping) ----------
+        incomes = capOutliers(incomes);
+        expenses = capOutliers(expenses);
+
         // ---------- Double Exponential Smoothing (Holt's Method) ----------
         double[] incomeForecast = holtForecast(incomes, months);
         double[] expenseForecast = holtForecast(expenses, months);
@@ -185,5 +189,29 @@ public class ForecastService {
 
     private double round(double val) {
         return Math.round(val * 100.0) / 100.0;
+    }
+
+    /**
+     * Cap outliers using IQR method.
+     * Values beyond Q1 - 1.5*IQR or Q3 + 1.5*IQR are clamped.
+     */
+    private double[] capOutliers(double[] data) {
+        int n = data.length;
+        if (n < 4) return data; // need at least 4 points for IQR
+
+        double[] sorted = Arrays.copyOf(data, n);
+        Arrays.sort(sorted);
+
+        double q1 = sorted[n / 4];
+        double q3 = sorted[3 * n / 4];
+        double iqr = q3 - q1;
+        double lowerFence = q1 - 1.5 * iqr;
+        double upperFence = q3 + 1.5 * iqr;
+
+        double[] capped = new double[n];
+        for (int i = 0; i < n; i++) {
+            capped[i] = Math.max(lowerFence, Math.min(upperFence, data[i]));
+        }
+        return capped;
     }
 }
