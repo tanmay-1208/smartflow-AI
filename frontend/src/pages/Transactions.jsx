@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../supabaseClient";
+import { addTransaction } from "../api/transactions";
+import { Plus, X, TrendingUp, TrendingDown, IndianRupee, CalendarDays, Tag, FileText, Loader2 } from "lucide-react";
+
+const CATEGORIES = {
+  INCOME: ["Salary", "Sales", "Freelance", "Investment", "Refund", "Other"],
+  EXPENSE: ["Food", "Transport", "Rent", "Utilities", "Entertainment", "Shopping", "Health", "Education", "Other"],
+};
 
 export default function Transactions() {
   const [data, setData] = useState([]);
@@ -7,6 +14,19 @@ export default function Transactions() {
   const [filter, setFilter] = useState("ALL");
   const [isLive, setIsLive] = useState(false);
   const [realtimeStatus, setRealtimeStatus] = useState("Connecting to Realtime...");
+
+  // Modal state
+  const [showModal, setShowModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [form, setForm] = useState({
+    type: "EXPENSE",
+    category: "Food",
+    amount: "",
+    description: "",
+    date: new Date().toISOString().split("T")[0],
+  });
+  const [formError, setFormError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
   const fetchTransactions = async () => {
     try {
@@ -77,6 +97,69 @@ export default function Transactions() {
     return matchesFilter && matchesSearch;
   });
 
+  const openModal = () => {
+    setForm({
+      type: "EXPENSE",
+      category: "Food",
+      amount: "",
+      description: "",
+      date: new Date().toISOString().split("T")[0],
+    });
+    setFormError("");
+    setSuccessMsg("");
+    setShowModal(true);
+  };
+
+  const handleTypeChange = (type) => {
+    setForm(prev => ({
+      ...prev,
+      type,
+      category: CATEGORIES[type][0],
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setFormError("");
+
+    if (!form.description.trim()) {
+      setFormError("Description is required.");
+      return;
+    }
+    if (!form.amount || isNaN(form.amount) || Number(form.amount) <= 0) {
+      setFormError("Enter a valid amount greater than 0.");
+      return;
+    }
+    if (!form.date) {
+      setFormError("Date is required.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        type: form.type,
+        category: form.category,
+        description: form.description.trim(),
+        amount: form.type === "INCOME" ? Math.abs(Number(form.amount)) : -Math.abs(Number(form.amount)),
+        date: form.date,
+      };
+
+      await addTransaction(payload);
+      setSuccessMsg("Transaction added successfully!");
+      setTimeout(() => {
+        setShowModal(false);
+        setSuccessMsg("");
+        fetchTransactions();
+      }, 800);
+    } catch (err) {
+      console.error(err);
+      setFormError("Failed to add transaction. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="p-6 text-white min-h-screen">
       <div className="max-w-6xl mx-auto space-y-6">
@@ -93,25 +176,37 @@ export default function Transactions() {
             </div>
           </div>
           
-          <div className="flex gap-2">
-            <button 
-              onClick={() => setFilter("ALL")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === "ALL" ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"}`}
+          <div className="flex items-center gap-3">
+            {/* Add Transaction Button */}
+            <button
+              id="add-transaction-btn"
+              onClick={openModal}
+              className="group flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition-all duration-300 hover:scale-[1.03] active:scale-95"
             >
-              All
+              <Plus size={18} className="transition-transform duration-300 group-hover:rotate-90" />
+              Add Transaction
             </button>
-            <button 
-              onClick={() => setFilter("INCOME")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === "INCOME" ? "bg-green-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"}`}
-            >
-              Income
-            </button>
-            <button 
-              onClick={() => setFilter("EXPENSE")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === "EXPENSE" ? "bg-red-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"}`}
-            >
-              Expense
-            </button>
+
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setFilter("ALL")}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === "ALL" ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"}`}
+              >
+                All
+              </button>
+              <button 
+                onClick={() => setFilter("INCOME")}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === "INCOME" ? "bg-green-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"}`}
+              >
+                Income
+              </button>
+              <button 
+                onClick={() => setFilter("EXPENSE")}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === "EXPENSE" ? "bg-red-600 text-white" : "bg-gray-800 text-gray-400 hover:text-white"}`}
+              >
+                Expense
+              </button>
+            </div>
           </div>
         </div>
 
@@ -176,6 +271,214 @@ export default function Transactions() {
           </div>
         </div>
       </div>
+
+      {/* Add Transaction Modal */}
+      {showModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false); }}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]" />
+
+          {/* Modal */}
+          <div className="relative w-full max-w-lg bg-gray-900 border border-gray-700/50 rounded-2xl shadow-2xl shadow-black/50 animate-[slideUp_0.3s_ease-out]">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-800">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                  <IndianRupee size={20} className="text-blue-400" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-white">New Transaction</h2>
+                  <p className="text-xs text-gray-400 mt-0.5">Add an income or expense entry</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowModal(false)}
+                className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
+              {/* Type Selector */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-300 flex items-center gap-1.5">
+                  <Tag size={14} className="text-gray-500" />
+                  Type
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleTypeChange("INCOME")}
+                    className={`flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all duration-200
+                      ${form.type === "INCOME"
+                        ? "bg-green-500/15 border-2 border-green-500/50 text-green-400 shadow-lg shadow-green-500/10"
+                        : "bg-gray-800/50 border-2 border-gray-700/50 text-gray-400 hover:border-gray-600 hover:text-gray-300"
+                      }`}
+                  >
+                    <TrendingUp size={16} />
+                    Income
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleTypeChange("EXPENSE")}
+                    className={`flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all duration-200
+                      ${form.type === "EXPENSE"
+                        ? "bg-red-500/15 border-2 border-red-500/50 text-red-400 shadow-lg shadow-red-500/10"
+                        : "bg-gray-800/50 border-2 border-gray-700/50 text-gray-400 hover:border-gray-600 hover:text-gray-300"
+                      }`}
+                  >
+                    <TrendingDown size={16} />
+                    Expense
+                  </button>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-300 flex items-center gap-1.5">
+                  <FileText size={14} className="text-gray-500" />
+                  Description
+                </label>
+                <input
+                  id="txn-description"
+                  type="text"
+                  placeholder="e.g. Monthly salary, Groceries purchase"
+                  value={form.description}
+                  onChange={(e) => setForm(prev => ({ ...prev, description: e.target.value }))}
+                  className="w-full bg-gray-800/50 border border-gray-700/50 text-white rounded-xl py-3 px-4 text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all"
+                  autoFocus
+                />
+              </div>
+
+              {/* Amount + Date row */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-300 flex items-center gap-1.5">
+                    <IndianRupee size={14} className="text-gray-500" />
+                    Amount (₹)
+                  </label>
+                  <input
+                    id="txn-amount"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    value={form.amount}
+                    onChange={(e) => setForm(prev => ({ ...prev, amount: e.target.value }))}
+                    className="w-full bg-gray-800/50 border border-gray-700/50 text-white rounded-xl py-3 px-4 text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-300 flex items-center gap-1.5">
+                    <CalendarDays size={14} className="text-gray-500" />
+                    Date
+                  </label>
+                  <input
+                    id="txn-date"
+                    type="date"
+                    value={form.date}
+                    onChange={(e) => setForm(prev => ({ ...prev, date: e.target.value }))}
+                    className="w-full bg-gray-800/50 border border-gray-700/50 text-white rounded-xl py-3 px-4 text-sm focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all [color-scheme:dark]"
+                  />
+                </div>
+              </div>
+
+              {/* Category */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-300 flex items-center gap-1.5">
+                  <Tag size={14} className="text-gray-500" />
+                  Category
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {CATEGORIES[form.type].map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setForm(prev => ({ ...prev, category: cat }))}
+                      className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200
+                        ${form.category === cat
+                          ? form.type === "INCOME"
+                            ? "bg-green-500/15 border border-green-500/40 text-green-400"
+                            : "bg-red-500/15 border border-red-500/40 text-red-400"
+                          : "bg-gray-800/50 border border-gray-700/40 text-gray-400 hover:border-gray-600 hover:text-gray-300"
+                        }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Error */}
+              {formError && (
+                <div className="flex items-center gap-2 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm animate-[fadeIn_0.2s_ease-out]">
+                  <X size={14} />
+                  {formError}
+                </div>
+              )}
+
+              {/* Success */}
+              {successMsg && (
+                <div className="flex items-center gap-2 px-4 py-3 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 text-sm animate-[fadeIn_0.2s_ease-out]">
+                  <TrendingUp size={14} />
+                  {successMsg}
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="flex-1 py-3 rounded-xl text-sm font-medium text-gray-400 bg-gray-800/50 border border-gray-700/50 hover:bg-gray-800 hover:text-gray-200 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  id="txn-submit-btn"
+                  type="submit"
+                  disabled={isSubmitting}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all duration-300
+                    ${form.type === "INCOME"
+                      ? "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-lg shadow-green-500/20 hover:shadow-green-500/30"
+                      : "bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white shadow-lg shadow-red-500/20 hover:shadow-red-500/30"
+                    }
+                    disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      Adding...
+                    </>
+                  ) : (
+                    <>
+                      <Plus size={16} />
+                      Add {form.type === "INCOME" ? "Income" : "Expense"}
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Keyframe animations */}
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slideUp {
+          from { opacity: 0; transform: translateY(20px) scale(0.97); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+      `}</style>
     </div>
   );
 }
